@@ -1,2 +1,2 @@
 # tschatzl.github.io
-Blog
+Blog contents
