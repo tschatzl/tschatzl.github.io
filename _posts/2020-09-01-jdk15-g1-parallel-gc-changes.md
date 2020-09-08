@@ -8,7 +8,7 @@ tags: [GC, G1, Parallel, JDK 15, Performance]
 
 JDK 15 just moved into the release candidate phase and I thought it is a good time for another entry in my recaps of significant changes in the OpenJDK stop-the-world garbage collectors G1 and Parallel GC - this time in blog format.
 
-Overall JDK 15 is more of a **maintenance release** than a big feature release regarding these collectors as the [JEP list](https://openjdk.java.net/projects/jdk/15/) shows. Next to the usual micro-optimizations here and there that in total account for a few percent of pause time improvements, there are a few interesting changes that I would like to particularly highlight.
+The big change in JDK15 in the garbage collection area is certainly **ZGC** becoming a **production ready** feature [JEP 377](https://openjdk.java.net/jeps/377). For **G1 and Parallel GC** JDK 15 is more about **maintenance** than a big feature release regarding these collectors as the [JEP list](https://openjdk.java.net/projects/jdk/15/) shows. Next to the usual micro-optimizations here and there that in total account for a few percent of pause time improvements, there are a few interesting changes that I would like to particularly highlight though.
 
 ## Parallel GC
 
@@ -44,9 +44,9 @@ This section contains some minor changes or changes not directly related to garb
 
 * The `UseParallelOldGC` option is **now obsolete** and the functionality has been removed after being deprecated via [JEP 366](https://bugs.openjdk.java.net/browse/JDK-8229492) in JDK 14.
 
-## What missed JDK 15
+## What's next
 
-There have been a few changes that **did not make it** into JDK 15 due to last-minute issues or they just took a bit longer than expected. These include changes to make G1 more economical with memory, giving it back to the operating system more frequently, or concurrent marking related improvements.
+We are currently working on changes to make G1 more economical with memory, giving it back to the operating system more frequently, and concurrent marking related improvements. A short overview:
 
 * One of these changes is [JDK-8238687](https://bugs.openjdk.java.net/browse/JDK-8238687) where G1 will **adjust** current **committed heap size** dynamically on current application activity **at every GC** - instead of only during concurrent marking or at Full GC. This makes G1 memory usage much more dynamic, and also allows easy implementation of [`SoftMaxHeapSize`](https://bugs.openjdk.java.net/browse/JDK-8222145). I will probably write about this some more in a different post :)
 
@@ -58,6 +58,6 @@ There have been a few changes that **did not make it** into JDK 15 due to last-m
 
 ## Thanks go to...
 
-Everyone that contributed to another great JDK release. :)
+Everyone that contributed to another great JDK release. See you next release :)
 
 
