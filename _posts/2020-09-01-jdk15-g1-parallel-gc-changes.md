@@ -8,7 +8,7 @@ tags: [GC, G1, Parallel, JDK 15, Performance]
 
 JDK 15 just moved into the release candidate phase and I thought it is a good time for another entry in my recaps of significant changes in the OpenJDK stop-the-world garbage collectors G1 and Parallel GC - this time in blog format.
 
-The big change in JDK15 in the garbage collection area is certainly **ZGC** becoming a **production ready** feature [JEP 377](https://openjdk.java.net/jeps/377). For **G1 and Parallel GC** JDK 15 is more about **maintenance** than a big feature release regarding these collectors as the [JEP list](https://openjdk.java.net/projects/jdk/15/) shows. Next to the usual micro-optimizations here and there that in total account for a few percent of pause time improvements, there are a few interesting changes that I would like to particularly highlight though.
+The big change in JDK15 in the garbage collection area is certainly **ZGC** becoming a **production ready** feature with [JEP 377](https://openjdk.java.net/jeps/377). For **G1 and Parallel GC** JDK 15 is more about **maintenance** than a big feature release regarding these collectors as the [JEP list](https://openjdk.java.net/projects/jdk/15/) shows. Next to the usual micro-optimizations here and there that in total account for a few percent of pause time improvements, there are a few interesting changes that I would like to particularly highlight though.
 
 ## Parallel GC
 
