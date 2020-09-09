@@ -33,7 +33,7 @@ author:
   email: thomas.schatzl@oracle.com
 
 minima:
-  skin:dark
+  skin: dark
 
 minima:
   social_links:
