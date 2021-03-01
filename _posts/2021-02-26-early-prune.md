@@ -29,7 +29,7 @@ The exact options are
 
 ![Current Memory Usage on BigRAMTester](/assets/20210226-baseline.png)
 
-In addition to the memory consumption ("baseline") in dark blue, the graph also shows a "floor" in yellow that shows the amount of memory used by the GC component not by the remembered set. Overall, in this case G1's remembered set takes at most 1.6 GB, around 8% of the java heap. More than the rest of what G1 needs for operation, around 900 MB
+In addition to the memory consumption ("baseline") in dark blue, the graph also shows a "floor" (green) that shows the amount of memory used by the GC component not by the remembered set. Overall, in this case G1's remembered set takes at most 1.6 GB, around 8% of the java heap. More than the rest of what G1 needs for operation, around 900 MB
 
 *Whoopsie.*
 
@@ -67,7 +67,6 @@ See you next time,
 For comparison, here is a graph showing memory consumption of the GC component for the same benchmark in JDK 10.0.2 (cyan) including the ones shown above for comparison. JDK 8 and JDK 9 are at least worse than that, but due to a bug in remembered set NMT accounting [[8]][8] it is harder to get the exact numbers.
 
 ![And what about earlier JDKs....](/assets/20210226-and-jdk10.png)
-
 
 [0]: https://docs.oracle.com/en/java/javase/15/gctuning/garbage-first-g1-garbage-collector1.html#GUID-E9CB81BC-92E5-489E-8A2E-760691A41CDF
 [1]: https://docs.oracle.com/en/java/javase/15/vm/native-memory-tracking.html
