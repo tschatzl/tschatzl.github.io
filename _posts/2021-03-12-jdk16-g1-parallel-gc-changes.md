@@ -42,7 +42,7 @@ This section contains some changes that are important but less or not visible at
 
 ## What's next
 
-We are already busily working for JDK 17, which is an LTS release for Oracle and most other vendors. Here is a short list of changes you might want to look out for. As usual, no guarantees of any kind that anything noted here will actually show up. When it's done, it's done :)
+We are already busily working on JDK 17, which is an LTS release for Oracle and most other vendors. Here is a short list of changes you might want to look out for. As usual, no guarantees of any kind that anything noted here will actually show up. When it's done, it's done :)
 
   * JDK 17 might give some **huge improvements** in G1 non-Java heap memory usage with some particular focus on optimizations to decrease **remembered set memory usage**. This [recent post](https://tschatzl.github.io/2021/02/26/early-prune.html) demonstrates the problem. The change explained there ([JDK-8262185](https://bugs.openjdk.java.net/browse/JDK-8262185)) has already been pushed to mainline by now with the explained impact. There are some additional changes that we have been working on for a long time may reduce remembered set memory consumption much more so far. Stay tuned.
 
