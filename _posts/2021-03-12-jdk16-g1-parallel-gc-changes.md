@@ -6,7 +6,7 @@ date:   2021-03-12 16:39:24 +0200
 tags: [GC, G1, Parallel, JDK 16, Performance]
 ---
 
-Now that JDK 16 is released, it is a time for a recap of the most significant changes in Hotspot’s stop-the-world garbage collectors - G1 and Parallel GC.
+Now that JDK 16 is released, it is time for a recap of the most significant changes in Hotspot’s stop-the-world garbage collectors - G1 and Parallel GC.
 
 First, a short overview about the whole GC subcomponent: the only JEP in the garbage collection area this time around is for **ZGC** with [JEP 376](https://openjdk.java.net/jeps/376) where thread-stack processing has been moved out from its stop-the-world pauses, making now these pauses typicaly below a millisecond!. In addition to the usual micro-optimizations here and there, **G1** and **Parallel GC** got some interesting smaller updates too. 
 
