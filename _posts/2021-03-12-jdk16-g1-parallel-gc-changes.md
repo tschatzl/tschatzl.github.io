@@ -46,7 +46,7 @@ This [write-up](https://shipilev.net/jvm/anatomy-quarks/9-jni-critical-gclocker/
 
 ## What's next
 
-We are already actively working on JDK 17, which will be an LTS release for Oracle. Here is a short list of changes you might want to look out for. And as usual, no guarantees of any kind is made. Those features will only be inetgrated once they are done! ;-)
+We are already actively working on JDK 17, which will be an LTS release for Oracle. Here is a short list of changes you might want to look out for. And as usual, no guarantees of any kind is made. Those features will only be integrated once they are done! ;-)
 
   * JDK 17 might give some **huge improvements** in G1 non-Java heap memory usage with a particular focus on optimizations to decrease **remembered set memory usage**. This [post](https://tschatzl.github.io/2021/02/26/early-prune.html) highlights the problem. The change explained there ([JDK-8262185](https://bugs.openjdk.java.net/browse/JDK-8262185)) has already been pushed to mainline by now with the explained impact. In addition, there are additional changes that we have been working on for a long time that may reduce remembered set memory consumption much more. Stay tuned!
 
