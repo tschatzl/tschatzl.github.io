@@ -16,7 +16,7 @@ The full list of changes for the entire Hotspot GC subcomponent is [here](https:
 
   * The change [JDK-8252221](https://bugs.openjdk.java.net/browse/JDK-8252221) **parallelizes pre-touching memory** after it has been committed. This helps with startup on huge heaps with `-XX:+AlwaysPreTouch` enabled. There were some improvements in [JDK-8254699](https://bugs.openjdk.java.net/browse/JDK-8254699) and follow-ups (that also apply to G1 as it shares the same code) where the size of the work packets has been optimized on x86 and ARM64 platforms.
 
-  * **Processing of some more internal references** to the Java heap has been **parallelized** in [JDK-8247820](https://bugs.openjdk.java.net/browse/JDK-8247820), in some cases decreasing pause times a little in both Parallel and the G1 collector [JDK-8247819](https://bugs.openjdk.java.net/browse/JDK-8247819).
+  * **Processing of some more internal references** to the Java heap has been **parallelized** in [JDK-8247820](https://bugs.openjdk.java.net/browse/JDK-8247820), in some cases decreasing pause times a little in both Parallel and the G1 collector ([JDK-8247819](https://bugs.openjdk.java.net/browse/JDK-8247819)).
 
 ## G1 GC
 
@@ -38,7 +38,7 @@ This section contains some changes that are important but less or not visible at
 
     A. Shipilev has a write-up of this problem and the options on how to handle this [here](https://shipilev.net/jvm/anatomy-quarks/9-jni-critical-gclocker/); following this write-up, this change would move G1 behavior from option 1 (disabling gc completely) to option 3 (pin the subspace(s) containing the object(s)).
 
-    Examples for such preparatory changes are [JDK-8253600](https://bugs.openjdk.java.net/browse/JDK-8253600) and [JDK-8253081](https://bugs.openjdk.java.net/browse/JDK-8253081). **The missing part** is not enabling this functionality, that's just [a few lines of code](https://github.com/openjdk/jdk/compare/master...tschatzl:full-pin-support) at this point, but the as of this writing its behavioral impact has not been fully explored. Some initial testing showed some potential issues with unkown impact, where we brainstormed for [potential solutions](https://bugs.openjdk.java.net/issues/?jql=labels%20%3D%20gc-g1-pinned-regions). If anyone has interest to investigate this a bit more and then try one of these (or other) suggestions, feel free to contact me.
+    Examples for such preparatory changes are [JDK-8253600](https://bugs.openjdk.java.net/browse/JDK-8253600) and [JDK-8253081](https://bugs.openjdk.java.net/browse/JDK-8253081). **The missing part** is not enabling this functionality, that's just [a few lines of code](https://github.com/openjdk/jdk/compare/master...tschatzl:full-pin-support) at this point, but the as of this writing its behavioral impact has not been fully explored. Some initial testing showed some potential issues with unkown impact, after which we brainstormed for [potential solutions](https://bugs.openjdk.java.net/issues/?jql=labels%20%3D%20gc-g1-pinned-regions). If anyone has interest to investigate this a bit more and then try one of these (or other) suggestions, feel free to contact me.
 
 ## What's next
 
