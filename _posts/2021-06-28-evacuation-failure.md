@@ -30,7 +30,7 @@ Is this a problem? Both no and yes :)
 
 (And there are issues where the current implementation of the GCLocker mechanism causes VM failures like discussed in [JDK-8192647](https://bugs.openjdk.java.net/browse/JDK-8192647).)
 
-Since the specification only requires memory management to keep this objects in place (if not copying or preventing garbage collection), the options are about keeping the Java objects that need to stay in place in place, and freeing the space surrounding them for subsequent allocation in different granularities.
+Since the specification only requires memory management to keep this objects in place (if not copying or preventing garbage collection), the options are about keeping the Java objects that need to stay in place in place, and freeing the space surrounding them for subsequent allocation with different granularities.
 
 Ideally, the garbage collector would just keep only these objects in place, and allow evacuation of everything else surrounding them. The problem is that this complicates subsequent allocation significantly.
 
@@ -38,7 +38,7 @@ The regionalized collectors (G1, Shenandoah, ZGC) already support evacuation of 
 
 There is no good solution for the non-regionalized collectors like Serial and Parallel GC. At least I do not know any, so they will most likely keep on using the GCLocker forever.
 
-Besides, this technique is not without risks: while in most cases better than stalling the application, it does carry the **risk of pinning the entire heap** and causing a VM failure. How big is that risk? There is too little data on that but Shenandoah did not add some GCLocker mechanism so far...
+Besides, this technique is not without risks: while in most cases better than stalling the application, it does carry the **risk of pinning the entire heap** and causing a VM failure. How big is that risk? There is too little data on that but anecdotally Shenandoah did not add some GCLocker mechanism so far as far as I know.
 
 ## G1 and Object Pinning
 
@@ -46,7 +46,7 @@ G1 already **fully supports region pinning** in principle. Actually it has been 
 
 All this has been about regions located in G1's old generation, but what about pinned regions in the **young generation**?
 
-G1 **Evacuation Failure handling** already provides a mechanism to handle objects that stay in place because they could not be copied. These (live) objects are marked specially during collection, and at the end of the garbage collection pause there is a special phase to fix up these regions.
+G1 **Evacuation Failure handling** already provides a mechanism to handle objects that need to stay in place because they could not be copied. These (live) objects are marked specially during collection, and at the end of the garbage collection pause there is a special phase to fix up these regions.
 
 So all set, flip the switch as suggestion in [this patch](https://github.com/openjdk/jdk/compare/master...tschatzl:full-pin-support) and call it a finished job? Not so fast :)
 
@@ -70,13 +70,13 @@ Anyway the additional work for evacuation failure handling during the pause is a
      - the Block Offset Table, a very important side table over the Java heap that is used for fast location of object starts, needs to be created.
      - set up concurrent remembered set refinement so that these objects will be scanned for references into regions requiring a remembered set.
 
-I.e. basically some optimizations generational collectors like G1 exploit for the young generation need to be undone. Generational concurrent collectors would probably do all this or similar work concurrently, so it will not show up in a pause, but only complicates code.
+I.e. basically some optimizations generational collectors like G1 exploit for the young generation need to be undone. Generational concurrent collectors would probably do all this or similar work concurrently, so it would not show up in a pause, but only complicates code.
 
 Maybe this is not an issue after all - only more measurements than already performed can show that it is (not).
 
 ## Where Can I Help?
 
-In general from initial testing the amount of pinning required because of this is not very high (few regions), however the amount of objects that need to be handled can vary a lot, from just a few objects to many objects due to single objects located in regions where a lot of unrelated objects also need to stay in place.
+In general from initial testing the amount of pinned regions because of JNI is not very high (just a few regions), however the amount of objects that need to be handled can vary a lot, from just a few objects to many objects due to single objects located in regions where a lot of unrelated objects also need to stay in place.
 
 Within the Oracle garbage collection team we already brainstormed a bit [how to](https://bugs.openjdk.java.net/issues/?jql=labels%20%3D%20gc-g1-pinned-regions) improve the existing evacuation failure handling.
 
@@ -91,7 +91,7 @@ Changing this will require some consideration in the young gen sizing policy whi
 
 All of these suggestions improve evacuation failure handling and could be tested by inducing failed evacuations. Then there is finally the matter of actually turn on object pinning by adding the code from [JDK-8236594](https://bugs.openjdk.java.net/browse/JDK-8236594), with some required refactoring.
 
-More extensive conceptual changes in that area could involve moving work out of the pause: if evacuation did not use the object header for forwarding pointers, these regions could be walked concurrently and all of the work described above done concurrently as well.
+More extensive conceptual changes in that area could involve moving work for these regions out of the pause: if evacuation did not use the object header for forwarding pointers, these regions could be walked concurrently and all of the work described above done concurrently as well.
 
 ## Conclusion
 
