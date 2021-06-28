@@ -25,7 +25,7 @@ Is this a problem? Both no and yes :)
 **No**, because
  * the JNI specification suggests to not have your native code run for extended periods of time before calling `Release<PrimitiveType>Array*`, and the implementation assumes that this is. So this situation should not happen too often (hopefully).
  * implementations also assume that the amount of locked objects is small.
- * A. Shipilev's statement is a bit shortened for brevity: particularly G1 tries to avoid this situation by actually allowing additional allocation exceeding young gen size - that is I believe the reason for the different behavior between G1 and other collectors in the non-compliant code tested there - to alleviate this problem a bit, i.e. keep other threads running for a just bit more in the hope that the native code completes during that time.
+ * particularly G1 tries to avoid this situation by actually allowing additional allocation exceeding young gen size - that is I believe the reason for the different behavior between G1 and other collectors in the non-compliant code tested there - to alleviate this problem a bit, i.e. keep other threads running for a just bit more in the hope that the native code completes during that time.
 The option `-XX:GCLockerEdenExpansionPercent` controls this amount. Of course this is a tradeoff as well and may cause other issues.
 
 **Yes**, because there may still be stalls of the entire application waiting for the GCLocker.
