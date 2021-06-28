@@ -91,7 +91,7 @@ Changing this will require some consideration in the young gen sizing policy whi
   * increase parallelism within failed regions: currently a single thread takes over evacuation failure handling of a single region, which effectively serializes that phase. One option is to record potential entry points/live object starts within a region to allow multiple threads work on different parts of a region. Note that the Block Offset Table should not be used as there is none. [JDK-8256265](G1: Improve parallelism in regions that failed evacuation).
   * enhancing above could be a change that actually stores which regions are affected by the evacuation failure: currently in G1 all threads search the entire region table for failed regions which can be slow in itself if there are many regions. [JDK-8254167](https://bugs.openjdk.java.net/browse/JDK-8254167).
 
-All of these suggestions improve evacuation failure handling and could be tested by inducing failed evacuations. Then there is finally the matter of actually turn on object pinning by turning on the feature [JDK-8236594](https://bugs.openjdk.java.net/browse/JDK-8236594), with some required refactoring.
+All of these suggestions improve evacuation failure handling and could be tested by inducing failed evacuations. Then there is finally the matter of actually turn on object pinning by adding the code from [JDK-8236594](https://bugs.openjdk.java.net/browse/JDK-8236594), with some required refactoring.
 
 More extensive conceptual changes in that area could involve moving work out of the pause: if evacuation did not use the object header for forwarding pointers, these regions could be walked concurrently and all of the work described above done concurrently as well.
 
