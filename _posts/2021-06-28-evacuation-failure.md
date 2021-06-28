@@ -34,11 +34,11 @@ Since the specification only requires memory management to keep this objects in 
 
 Ideally, the garbage collector would just keep only these objects in place, and allow evacuation of everything else surrounding them. The problem is that this complicates subsequent allocation significantly.
 
-The regionalized collectors (G1, Shenandoah, ZGC) already support evacuation of parts of the heap - their regions. So for these collectors, the straightforward solution is to not evacuate the regions that contain such objects **together with all other live objects**. This changes the problem from pinning an object to pinning a region, which is much easier, at the cost of additional unusable memory in the Java heap.
+The regionalized collectors (G1, Shenandoah, ZGC) already support evacuation of parts of the heap - their regions. So for these collectors, the straightforward solution is to not evacuate the regions that contain such objects **together with all other live objects**. This changes the problem from pinning an object to pinning a region, which is much easier, at the cost of additional unallocatable memory in the Java heap.
 
 There is no good solution for the non-regionalized collectors like Serial and Parallel GC. At least I do not know any, so they will most likely keep on using the GCLocker forever.
 
-Besides, this technique is not without risks: while in most cases better than stalling the application, it does carry the **risk of pinning the entire heap** and causing a VM allocation failure. How big is that risk? There is too little data on that but Shenandoah did not add some GCLocker mechanism so far...
+Besides, this technique is not without risks: while in most cases better than stalling the application, it does carry the **risk of pinning the entire heap** and causing a VM failure. How big is that risk? There is too little data on that but Shenandoah did not add some GCLocker mechanism so far...
 
 ## G1 and Object Pinning
 
