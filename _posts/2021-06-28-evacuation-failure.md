@@ -30,6 +30,8 @@ The option `-XX:GCLockerEdenExpansionPercent` controls this amount. Of course th
 
 **Yes**, because there may still be stalls of the entire application waiting for the GCLocker.
 
+**And** there are issues where the current implementation of the GCLocker mechanism causes VM failures like discussed in [JDK-8192647](https://bugs.openjdk.java.net/browse/JDK-8192647).
+
 Since the specification only requires memory management to keep this objects in place (if not copying or preventing garbage collection), the options are about keeping the Java objects that need to stay in place in place, and freeing the space surrounding them for subsequent allocation in different granularities.
 
 Ideally, the garbage collector would just keep only these objects in place, and allow evacuation of everything else surrounding them. The problem is that this complicates subsequent allocation significantly.
@@ -64,7 +66,7 @@ Anyway the additional work for evacuation failure handling during the pause is a
 
 **After evacuation**
 
-  * G1 restores these preserved marks again. This task is typically not an issue: only objects that have been locked, or one that have a hash value need to be preserved, and these are typically few compared to the set of all evacuated objects (using the [`RestorePreservedMarksTask`](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/gc/shared/preservedMarks.cpp#L95) work gang).
+  * G1 restores these preserved marks again. This task is typically not an issue: only objects that have been locked, or one that have a hash value need to be preserved, and these are typically few compared to the set of all evacuated objects (using the [`RestorePreservedMarksTask`](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/gc/shared/preservedMarks.cpp#L95) work gang task).
   * G1 promotes these young regions to old ones. This requires a significant amount of work (in [`RemoveSelfForwardPtrHRClosure::remove_self_forward_ptr_by_walking_hr()`](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/gc/g1/g1EvacFailure.cpp#L223)):
      - dead objects between these surviving objects need to be overwritten so that anyone walking these regions linearly does not find dead, evacuated objects. For that, and since there is not Block Offset Table, a single thread linearly walks all objects found both dead or alive and then filling in dummy objects between live objects.
      - the Block Offset Table, a very important side table over the Java heap that is used for fast location of object starts, needs to be created.
