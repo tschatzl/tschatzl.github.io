@@ -10,7 +10,7 @@ A few days ago JDK 17 [went GA](https://mail.openjdk.java.net/pipermail/jdk-dev/
 
 Before getting into detail about what changed in G1 and Parallel GC, a short overview with statistics about the whole GC subcomponent: there has been [no JEP in the garbage collection area](https://openjdk.java.net/projects/jdk/17/).
 
-The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/issues/?jql=project%20%3D%20JDK%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 330 changes in total. This is in line with recent releases.
+The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/browse/JDK-8271064?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 312 changes in total. This is in line with recent releases.
 
 A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main): this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
 
@@ -53,7 +53,7 @@ We also noticed small single-digit percent improvements in throughput in some ap
       
     Preventive garbage collections are enabled by default. They may be disabled by using the diagnostic flag `G1UsePreventiveGC` in case they cause regressions.
 
-  * A significant bug with large page handling on Windows has been fixed: [JDK-8266489](https://bugs.openjdk.java.net/browse/JDK-8266489) enables G1 to use when the region size is larger than 2 MB, increasing performance significantly in some cases on larger Java heaps.
+  * A significant bug with large page handling on Windows has been fixed: [JDK-8266489](https://bugs.openjdk.java.net/browse/JDK-8266489) enables G1 to use large pages when the region size is larger than 2 MB, increasing performance significantly in some cases on larger Java heaps.
 
   * With [JDK-8262068](https://bugs.openjdk.java.net/browse/JDK-8262068) Hamlin Li added support for the `MarkSweepDeadRatio` option in G1 Full GC in addition to Serial and Parallel GC. This option controls how much waste is tolerated in regions scheduled for compaction. Regions that have a higher live occupancy than this ratio (default 95%), are not compacted because compacting them would not return an appreciably amount of memory, and take a long time to compact only.
 
