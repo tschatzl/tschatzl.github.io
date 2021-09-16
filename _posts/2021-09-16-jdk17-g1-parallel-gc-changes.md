@@ -12,7 +12,7 @@ Before getting into detail about what changed in G1 and Parallel GC, a short ove
 
 The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/issues/?jql=project%20%3D%20JDK%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 330 changes in total. This is in line with recent releases.
 
-A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main)'s main changes this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)]. Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
+A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main)'s main changes this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)]). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
 
 ## Generic improvements
 
@@ -40,7 +40,7 @@ We also noticed small single-digit percent improvements in throughput in some ap
 
   * G1 now schedules **preventive garbage collections** with [JDK-8257774](https://bugs.openjdk.java.net/browse/JDK-8257774). This contribution by Microsoft introduces a special kind of young collection with the purpose to avoid typically long pauses with [evacuation failures](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-g1-garbage-collector1.html#GUID-BE157AF6-29E7-461A-82CF-50C1978785DA). This situation, where there is not enough space to copy objects to, often occurs because of a high rate of short-living humongous object allocation - they may fill up the heap before G1 would normally schedule a garbage collection.
   
-    So instead of waiting this situation to happen, G1 starts an out-of-schedule garbage collection while it can still be confident to have enough space to copy surviving objects to, assuming that [eager reclaim](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-g1-garbage-collector1.html#GUID-D74F3CC7-CC9F-45B5-B03D-510AEEAC2DAC) will free up lots of heap space and regular operation can continue.
+    So instead of waiting for this situation to happen, G1 starts an out-of-schedule garbage collection while it can still be confident to have enough space to copy surviving objects to, assuming that [eager reclaim](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-g1-garbage-collector1.html#GUID-D74F3CC7-CC9F-45B5-B03D-510AEEAC2DAC) will free up lots of heap space and regular operation can continue.
   Preventive collections will be tagged as `G1 Preventive Collection` in the logs, i.e. the corresponding log entry could look like the following:
   
     ```
