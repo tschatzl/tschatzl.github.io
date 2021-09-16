@@ -6,7 +6,7 @@ date:   2021-09-16 12:00:00 +0200
 tags: [GC, G1, Parallel, JDK 17, Performance]
 ---
 
-Yesterday JDK 17 [went GA](https://mail.openjdk.java.net/pipermail/jdk-dev/2021-September/006037.html). For this reason it is time for another post that  attempts to summarize most significant changes in Hotspot´s stop-the-world garbage collectors in that release - G1 and Parallel GC.
+A few days ago JDK 17 [went GA](https://mail.openjdk.java.net/pipermail/jdk-dev/2021-September/006037.html). For this reason it is time for another post that  attempts to summarize most significant changes in Hotspot´s stop-the-world garbage collectors in that release - G1 and Parallel GC.
 
 Before getting into detail about what changed in G1 and Parallel GC, a short overview with statistics about the whole GC subcomponent: there has been [no JEP in the garbage collection area](https://openjdk.java.net/projects/jdk/17/).
 
