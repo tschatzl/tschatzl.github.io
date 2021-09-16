@@ -12,7 +12,7 @@ Before getting into detail about what changed in G1 and Parallel GC, a short ove
 
 The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/issues/?jql=project%20%3D%20JDK%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 330 changes in total. This is in line with recent releases.
 
-A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main)'s main changes this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)]). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
+A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main)'s main changes this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
 
 ## Generic improvements
 
