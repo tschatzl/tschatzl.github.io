@@ -12,7 +12,7 @@ Before getting into detail about what changed in G1 and Parallel GC, a short ove
 
 The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/browse/JDK-8271064?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 312 changes in total. This is in line with recent releases.
 
-A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main): this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
+Before talking about the stop-the world collectors, a brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main): this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
 
 ## Generic improvements
 
@@ -67,17 +67,17 @@ Some additional parallelization of parts of the GC phases (e.g. [JDK-8214237](ht
 
 In addition, there are JDK 17 changes that are important but less or not visible at all for end users.
 
-  * This mostly concerns the start of aggressive refactoring of the G1 collector code. Particularly we are in the process of moving out code from the catch-all class `G1CollectedHeap`, separating concerns and so slice it into more understandable components. This already improves maintainability and hopefully speeds up further work.
+  * we started to aggressively refactor the G1 collector code. Particularly we are in the process of moving out code from the catch-all class `G1CollectedHeap`, trying to separate concerns and slice it into more understandable components. This already improves maintainability and hopefully speeds up further work.
 
 ## What's next
 
-Of course the GC team and other contributors is already actively working on JDK 18. Here is a short list of interesting changes that are currently in development and you may want to look out for. Without guarantees, as usual, they are going to be integrated when they are done ;-)
+Of course the GC team and other contributors are already actively working on JDK 18. Here is a short list of interesting changes that are currently in development and you may want to look out for. Without guarantees, as usual, they are going to be integrated when they are done ;-)
 
   * First, the actually already integrated change [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) massively reduces G1 memory consumption at no cost. This rewrite of [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) data storage reduces its footprint by around 75% from JDK 17 to JDK 18. The following figure shows memory consumption as reported by NMT for the GC component for some database-like application as a teaser for various recent JDKs.
   
     ![here](/assets/20210920-bigramtester-memoryusage.png)
 
-    Particularly note the yellow line showing current (18b11) total memory usage compared to 17b35 (pink) and 16.0.2 (blue). You can calculate remembered set size by subtracting the "floor" (cyan) from a given run of the curve.
+    Particularly note the yellow line showing current (18b11) total memory usage compared to 17b35 (pink) and 16.0.2 (blue). You can calculate remembered set size by subtracting other GC component memory usage represented by the "floor" (cyan) from a given curve.
 
     There will be a more thorough evaluation and explanation of the change in the future in this blog. At least remembered set size tuning should to a large degree a thing of the past. More changes building on this change to improve performance and further reduce remembered set memory size are planned.
 
