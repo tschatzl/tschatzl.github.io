@@ -12,7 +12,7 @@ Before getting into detail about what changed in G1 and Parallel GC, a short ove
 
 The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/issues/?jql=project%20%3D%20JDK%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2217%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc), clocking in at 330 changes in total. This is in line with recent releases.
 
-A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main)'s main changes this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
+A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main): this release improved usability by dynamically adjusting concurrent GC threads to match the application to on the one hand optimize throughput and on the other hand avoid allocation stalls ([JDK-8268372](https://bugs.openjdk.java.net/browse/JDK-8268372)). Another notable change, [JDK-8260267](https://bugs.openjdk.java.net/browse/JDK-8260267) reduces mark stack memory usage significantly. Per is likely going to share more details in [his blog](https://malloc.se/) soon.
 
 ## Generic improvements
 
@@ -34,7 +34,7 @@ Parallel GC pauses have been sped up a bit by making formerly serial phases in t
 
   * Finally, [JDK-8248314](https://bugs.openjdk.java.net/browse/JDK-8248314) shaves off **a few milliseconds of Full GC pauses** for the same reason.
 
-We also noticed small single-digit percent improvements in throughput in some applications compared to JDK 16, which, are however more likely related to compiler improvements in JDK 17 than GC ones unless above changes are exactly solving your application's issue.
+We also noticed small single-digit percent improvements in throughput in some applications compared to JDK 16, which, are however more likely related to compiler improvements in JDK 17 than GC ones. That is, unless above changes are exactly solving your application's issue.
 
 ## G1 GC
 
@@ -57,7 +57,7 @@ We also noticed small single-digit percent improvements in throughput in some ap
 
   * With [JDK-8262068](https://bugs.openjdk.java.net/browse/JDK-8262068) Hamlin Li added support for the `MarkSweepDeadRatio` option in G1 Full GC in addition to Serial and Parallel GC. This option controls how much waste is tolerated in regions scheduled for compaction. Regions that have a higher live occupancy than this ratio (default 95%), are not compacted because compacting them would not return an appreciably amount of memory, and take a long time to compact only.
 
-    In some situations this may be undesirable if you want maximum heap compaction for some reason, but manually setting this flag's value to `100` disables the feature (like with the other collectors).
+    In some situations this may be undesirable. If you want maximum heap compaction for some reason, manually setting this flag's value to `100` disables the feature (like with the other collectors).
 
   * Significant memory savings may be gained by **pruning collection sets early** ([JDK-8262185](https://bugs.openjdk.java.net/browse/JDK-8262185)): with that change, G1 tries to keep the remembered sets only for a range of old generation regions that it will almost surely evacuate, not all possible useful candidates. There is a [posting](https://tschatzl.github.io/2021/02/26/early-prune.html) on my blog that highlights the problem and shows potential gains.
 
@@ -71,7 +71,7 @@ In addition, there are JDK 17 changes that are important but less or not visible
 
 ## What's next
 
-Of course the GC team and other contributors is already actively working on JDK 18. Here is a short list of interesting changes that are currently in development and you may want to look out for. Without guarantees, as usual, going to be integrated when they are done ;-)
+Of course the GC team and other contributors is already actively working on JDK 18. Here is a short list of interesting changes that are currently in development and you may want to look out for. Without guarantees, as usual, they are going to be integrated when they are done ;-)
 
   * First, the actually already integrated change [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) massively reduces G1 memory consumption at no cost. This rewrite of [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) data storage reduces its footprint by around 75% from JDK 17 to JDK 18. The following figure shows memory consumption as reported by NMT for the GC component for some database-like application as a teaser for various recent JDKs.
   
@@ -83,7 +83,7 @@ Of course the GC team and other contributors is already actively working on JDK 
 
   * Serial GC, Parallel GC and ZGC support string deduplication like G1 and Shenandoah in JDK 18. [JEP 192](http://openjdk.java.net/jeps/192) gives details about this technique, now applicable to all Hotspot collectors.
 
-  * Support for archived heap objects for Serial gc is in development in [JDK-8273508](https://bugs.openjdk.java.net/browse/JDK-8273508).
+  * Support for archived heap objects for Serial GC is in development in [JDK-8273508](https://bugs.openjdk.java.net/browse/JDK-8273508).
 
   * Hamlin Li is currently doing great work on improving evacuation failure handling with the apparent goal to enable object pinning in G1 in the future; I wrote a short post on the problems and possible approaches [earlier](https://tschatzl.github.io/2021/06/28/evacuation-failure.html).
 
