@@ -79,7 +79,7 @@ Of course the GC team and other contributors are already actively working on JDK
 
     Particularly note the yellow line showing current (18b11) total memory usage compared to 17b35 (pink) and 16.0.2 (blue). You can calculate remembered set size by subtracting other GC component memory usage represented by the "floor" (cyan) from a given curve.
 
-    There will be a **more thorough evaluation** and explanation of the change in the **future in this blog**. At least remembered set size tuning should to a large degree a thing of the past. More changes building on this change to improve performance and further reduce remembered set memory size are planned.
+    There will be a **more thorough evaluation** and explanation of the change in the **future in this blog**. At least remembered set size tuning should to a large degree be a thing of the past. More changes building on this change to improve performance and further reduce remembered set memory size are planned.
 
   * **Serial GC, Parallel GC and ZGC support string deduplication** like G1 and Shenandoah in JDK 18. [JEP 192](http://openjdk.java.net/jeps/192) gives details about this technique, now applicable to all Hotspot collectors.
 
