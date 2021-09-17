@@ -53,9 +53,9 @@ We also noticed small single-digit percent improvements in throughput in some ap
       
     Preventive garbage collections are enabled by default. They may be disabled by using the diagnostic flag `G1UsePreventiveGC` in case they cause regressions.
 
-  * A significant bug with large page handling on Windows has been fixed: [JDK-8266489](https://bugs.openjdk.java.net/browse/JDK-8266489) enables G1 to use large pages when the region size is larger than 2 MB, increasing performance significantly in some cases on larger Java heaps.
+  * A significant bug with **large page handling on Windows has been fixed**: [JDK-8266489](https://bugs.openjdk.java.net/browse/JDK-8266489) enables G1 to use large pages when the region size is larger than 2 MB, increasing performance significantly in some cases on larger Java heaps.
 
-  * With [JDK-8262068](https://bugs.openjdk.java.net/browse/JDK-8262068) Hamlin Li added support for the `MarkSweepDeadRatio` option in G1 Full GC in addition to Serial and Parallel GC. This option controls how much waste is tolerated in regions scheduled for compaction. Regions that have a higher live occupancy than this ratio (default 95%), are not compacted because compacting them would not return an appreciably amount of memory, and take a long time to compact only.
+  * With [JDK-8262068](https://bugs.openjdk.java.net/browse/JDK-8262068) Hamlin Li **added support for the `MarkSweepDeadRatio`** option in G1 Full GC in addition to Serial and Parallel GC. This option controls how much waste is tolerated in regions scheduled for compaction. Regions that have a higher live occupancy than this ratio (default 95%), are not compacted because compacting them would not return an appreciably amount of memory, and take a long time to compact only.
 
     In some situations this may be undesirable. If you want maximum heap compaction for some reason, manually setting this flag's value to `100` disables the feature (like with the other collectors).
 
@@ -67,25 +67,25 @@ Some additional parallelization of parts of the GC phases (e.g. [JDK-8214237](ht
 
 In addition, there are JDK 17 changes that are important but less or not visible at all for end users.
 
-  * we started to aggressively refactor the G1 collector code. Particularly we are in the process of moving out code from the catch-all class `G1CollectedHeap`, trying to separate concerns and slice it into more understandable components. This already improves maintainability and hopefully speeds up further work.
+  * we started to **aggressively refactor the G1 collector code**. Particularly we are in the process of moving out code from the catch-all class `G1CollectedHeap`, trying to separate concerns and slice it into more understandable components. This already improves maintainability and hopefully speeds up further work.
 
 ## What's next
 
 Of course the GC team and other contributors are already actively working on JDK 18. Here is a short list of interesting changes that are currently in development and you may want to look out for. Without guarantees, as usual, they are going to be integrated when they are done ;-)
 
-  * First, the actually already integrated change [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) massively reduces G1 memory consumption at no cost. This rewrite of [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) data storage reduces its footprint by around 75% from JDK 17 to JDK 18. The following figure shows memory consumption as reported by NMT for the GC component for some database-like application as a teaser for various recent JDKs.
+  * First, the actually **already integrated change** [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) **massively reduces G1 memory consumption at no cost**. This rewrite of [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) data storage reduces its footprint by around 75% from JDK 17 to JDK 18. The following figure shows memory consumption as reported by NMT for the GC component for some database-like application as a teaser for various recent JDKs.
   
     ![here](/assets/20210920-bigramtester-memoryusage.png)
 
     Particularly note the yellow line showing current (18b11) total memory usage compared to 17b35 (pink) and 16.0.2 (blue). You can calculate remembered set size by subtracting other GC component memory usage represented by the "floor" (cyan) from a given curve.
 
-    There will be a more thorough evaluation and explanation of the change in the future in this blog. At least remembered set size tuning should to a large degree a thing of the past. More changes building on this change to improve performance and further reduce remembered set memory size are planned.
+    There will be a **more thorough evaluation** and explanation of the change in the **future in this blog**. At least remembered set size tuning should to a large degree a thing of the past. More changes building on this change to improve performance and further reduce remembered set memory size are planned.
 
-  * Serial GC, Parallel GC and ZGC support string deduplication like G1 and Shenandoah in JDK 18. [JEP 192](http://openjdk.java.net/jeps/192) gives details about this technique, now applicable to all Hotspot collectors.
+  * **Serial GC, Parallel GC and ZGC support string deduplication** like G1 and Shenandoah in JDK 18. [JEP 192](http://openjdk.java.net/jeps/192) gives details about this technique, now applicable to all Hotspot collectors.
 
-  * Support for archived heap objects for Serial GC is in development in [JDK-8273508](https://bugs.openjdk.java.net/browse/JDK-8273508).
+  * **Support for archived heap objects for Serial GC** is in development in [JDK-8273508](https://bugs.openjdk.java.net/browse/JDK-8273508).
 
-  * Hamlin Li is currently doing great work on improving evacuation failure handling with the apparent goal to enable object pinning in G1 in the future; I wrote a short post on the problems and possible approaches [earlier](https://tschatzl.github.io/2021/06/28/evacuation-failure.html).
+  * Hamlin Li is currently doing great work on **improving evacuation failure handling** with the apparent **goal to enable region pinning in G1** in the future; I wrote a short post on the problems and possible approaches [earlier](https://tschatzl.github.io/2021/06/28/evacuation-failure.html).
 
 More to come :)
 
