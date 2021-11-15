@@ -15,7 +15,7 @@ Objects **must not span regions** in the common case: typical Java objects range
 
 ![Allocation destination based on region size](/assets/20211115-xlarge-regions-allocation.png)
 
-The figure above shows the Java heap as set of regions at the bottom, and several kinds of objects with different sizes that are about to be allocated into these free regions (white areas): small objects like `A` may be allocated at any place in a region, half a region size objects like `B` are allocated as separate, single objects in a region, and objects of type `C` that are larger than a region (humongous), can only be allocated in contiguous sets of regions.
+The figure above shows the Java heap as set of regions at the bottom, and several kinds of objects with different sizes that are about to be allocated into these free regions (white areas): small objects like `A` may be allocated at any place in a region, more than half a region sized (humongous) objects like `B` are allocated as separate, single objects in a region. Similarly, humongous objects of type `C` that are larger than a region, can only be allocated in contiguous sets of regions.
 
 This implementation choice for humongous object allocation can cause problems:
   * fragmentation/waste at the end of regions. Unfortunately in practice it is common that the payload data of these large objects are 2^n sized. Adding the Hotspot object header causes total object size to just go over a region size, wasting almost completely empty regions in many cases. E.g. even if a complete Java object is one byte larger than a single region, it takes up **two** regions on the heap.
@@ -54,7 +54,7 @@ So what does [JDK-8275056](https://bugs.openjdk.java.net/browse/JDK-8275056) do 
 
 The figure above shows an example setup where regions are larger than 32MB. Look how the region to the left of `A` is split into two card regions, each having its own remembered set container.
 
-The change unlocks configurable heap region sizes of up to 512MB - which is an arbitrary limit - that should allow enough flexibility for even the largest heaps. The "optimal" amount of regions that G1 strives for, `2048`, would require a Java heap of to exceed 1 TB with this change.
+The change unlocks configurable heap region sizes of up to 512MB - which is an arbitrary limit - that should allow enough flexibility for even the largest heaps. The "optimal" amount of regions that G1 strives for, `2048`, would require a Java heap to exceed 1 TB with this change.
 
 ## Impact Discussion ##
 
@@ -66,7 +66,7 @@ On the other hand, TLABs (thread local allocation buffers) may be larger now, re
 Also some internal data structures that are managed on a per-region basis will take less memory overall, potentially allowing faster access as more can be kept in caches.
 Remembered sets are likely to be smaller as given usual locality assumption, there will be less cross-region references to record.
 
-Initial results from us and [others](https://bugs.openjdk.java.net/browse/JDK-8272773) with larger heap sizes on appropriately sized heaps show some promise, but we also noticed diminishing returns in our testing for heap regions sizes larger or equal to 128MB.
+Initial results from us and [others](https://bugs.openjdk.java.net/browse/JDK-8272773) with larger heap region sizes on appropriately sized heaps show some promise, but we also noticed diminishing returns in our testing for heap regions sizes larger or equal to 128MB.
 
 This limitation of the ergonomics heuristics is intentional - we wanted users to intentionally try out larger heap region sizes if they need it only and assume that people changing this, test the impact of this change thoroughly. We would be happy to hear your experience tuning heap region size though, please send comments to either [hotspot-gc-use@openjdk.java.net](mailto:hotspot-gc-use@openjdk.java.net) or [hotspot-gc-dev@openjdk.java.net](mailto:hotspot-gc-dev@openjdk.java.net).
 
