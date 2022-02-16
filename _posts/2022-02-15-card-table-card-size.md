@@ -63,9 +63,9 @@ The next figure shows the impact of card sizes on the pause time in this applica
 
 Pause time increases for a card size of 1024 (cyan line) - there is just so much more memory to look through than in other cases, outweighing all other benefits. Pause times for card sizes of 128 (blue) and 256 (purple) are basically tied: while the `Scan Heap Roots` phase is shorter the smaller the card size is, other phases of the garbage collection (mainly `Merge Heap Roots`, but also `Clear Logged Cards`) tend to get proportionally longer, cancelling out each other.
 
-For this application, a card size of 256 bytes seems optimal performing no other option tuning: pause times are as good as with 128 bytes cards, i.e. around 20% better than with the default 512 bytes (yellow), but requiring only half the memory for the card table.
+For this application, a card size of 256 bytes seems optimal performing no other option tuning: pause times are as good as with 128 bytes cards at half the memory usage than with 256 bytes for the card table, and around 20% better than with the default 512 bytes (yellow).
 
-If you can afford the additional 0.2% of Java heap memory usage when using a card table size of 256, this seems a worthwhile tradeoff.
+If you can afford the additional 0.2% of Java heap memory usage when using a card table size of 256, this seems a worthwhile tradeoff in this application.
 
 ## Summary
 
