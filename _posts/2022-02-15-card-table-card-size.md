@@ -13,7 +13,7 @@ When the garbage collector moves an object in the pause, it needs to adjust any 
 
 The naive and very slow approach would iterate over all of the areas of the Java heap that are not evacuated to find them.
 
-The card table speeds up finding these references: it is a side data structure where every element corresponds to a small part of the Java heap. These elements are called cards. Now, if the Java application (the mutator) modifies a reference, the VM executes code that sets the card which contains the reference to a special value. In the garbage collection pause the collector then searches the card table (which is much smaller than the card table, and much faster to traverse) for these special values. If such a special value found, the collector searches the corresponding Java heap area for references into the evacuated regions. Such a data structure is also commonly called a **remembered set**.
+The card table speeds up finding these references: it is a side data structure where every element corresponds to a small part of the Java heap. These elements are called cards. Now, if the Java application (the mutator) modifies a reference, the VM executes code that sets the card which contains the reference to a special value. In the garbage collection pause the collector then searches the card table (which is much smaller than the Java heap, and much faster to traverse) for these special values. If such a special value found, the collector searches the corresponding Java heap area for references into the evacuated regions. Such a data structure is also commonly called a **remembered set**.
 
 [This paper](https://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.51.7061) explains this technique in more detail.
 
@@ -31,9 +31,9 @@ The reason is that G1 allows independent evacuation of any [heap region](https:/
     
 ## The Change ##
 
-Until now, the size of the area a card covers has been fixed to 512 bytes. This size has been a tradeoff between the size of the card table (one byte per card, resulting in a memory usage of about 0.2% of Java heap size) and how long it takes to find the the reference within that area during garbage collection.
+Until now, the size of the area a card covers has been fixed to 512 bytes. This size has been a tradeoff between the size of the card table (one byte per card, resulting in a memory usage of about 0.2% of Java heap size) and how long it takes to find the reference within that area during garbage collection.
 
-With JDK 18 you can select the its value using the `-XX:GCCardSizeInBytes` from one of `128`, `256`, `512` (default) and `1024` (the last is 64 bit only).
+With JDK 18 you can select its value using the `-XX:GCCardSizeInBytes` from one of `128`, `256`, `512` (default) and `1024` (the last is 64 bit only).
 
 ## Impact Discussion ##
 
