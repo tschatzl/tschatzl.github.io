@@ -18,7 +18,7 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
 ## Generic improvements
 
-  * All OpenJDK garbage collectors now support string deduplication as explained in [JEP 192](https://openjdk.java.net/jeps/192). Parallel GC implemented support with [JDK-8267185](https://bugs.openjdk.java.net/browse/JDK-8267185), Serial GC with [JDK-8272609](https://bugs.openjdk.java.net/browse/JDK-8272609) and ZGC with [JDK-8267186](https://bugs.openjdk.java.net/browse/JDK-8267186). Note that the implementation differs what has been explained in the JEP, but the basic principle still applies. Enable using the `-XX:+UseStringDeduplication` option.
+  * All OpenJDK garbage collectors now support string deduplication as explained in [JEP 192](https://openjdk.java.net/jeps/192). Parallel GC implemented support with [JDK-8267185](https://bugs.openjdk.java.net/browse/JDK-8267185), Serial GC with [JDK-8272609](https://bugs.openjdk.java.net/browse/JDK-8272609) and ZGC with [JDK-8267186](https://bugs.openjdk.java.net/browse/JDK-8267186). Note that the implementation differs from what has been explained in the JEP, but the basic principle still applies. Enable using the `-XX:+UseStringDeduplication` option.
   
   * V. Chand [contributed a change](https://bugs.openjdk.java.net/browse/JDK-8272773) that allows configuration of the card table card size. The `-XX:GCCardSizeInBytes` can be used to change this value, with allowable values of `128`, `256`, `512` and `1024` (the last is 64 bit only).
 
@@ -32,15 +32,15 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
 There have been quite a few user-visible changes specific to G1 this release:
 
-  * The [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) rewrite covered by [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) **massively reduces G1 memory consumption at no cost**. It reduces memory footprint for remembered sets significantly. The following figure compares memory consumption as reported by [NMT](https://docs.oracle.com/en/java/javase/17/vm/native-memory-tracking.html) for the GC component for some object cache-like application for JDK 17 and JDK 18.
+  * The [remembered set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-garbage-collector-tuning.html#GUID-A0343B53-A690-4DDE-98F9-9877096DBF0F) rewrite covered by [JDK-8017163](https://bugs.openjdk.java.net/browse/JDK-8017163) **massively reduces G1 native memory consumption at no cost**. It reduces native memory footprint for remembered sets significantly. The following figure compares native memory consumption as reported by [NMT](https://docs.oracle.com/en/java/javase/17/vm/native-memory-tracking.html) for the GC component for some object cache-like application for JDK 17 and JDK 18.
   
     ![Memory usage BigRAMTester 20GB](/assets/20220215-bigramtester-memoryusage.png)
 
-    Memory usage, in particular remembered set memory usage, has gone down from around 2GB peak (JDK 17, blue) to 1.3GB (JDK 18, purple) peak in stable state, saving around 35-40% of memory.
+    Native memory usage, in particular remembered set memory usage, has gone down from around 2GB peak (JDK 17, blue) to 1.3GB (JDK 18, purple) peak in stable state, saving around 35-40% of memory.
     
     (Trivia: JDK 8 uses almost 5.8GB of native memory for the same application, JDK 11 4GB).
     
-    The change also adds a new NMT category called `GCCardSet` which counts the memory usage of the G1 remembered set only; the existing `GC` NMT category contains all other garbage collection memory usage. In the graph above the `GC` component only memory usage for JDK 18 is indicated by the yellow "Floor" line.
+    The change also adds a new NMT category called `GCCardSet` which counts the native memory usage of the G1 remembered set only; the existing `GC` NMT category contains all other garbage collection native memory usage. In the graph above the `GC` component only native memory usage for JDK 18 is indicated by the yellow "Floor" line.
 
     Following is an example on how these categories look like in the NMT report:
 
@@ -92,12 +92,12 @@ Of course we have long since begun working on JDK 19. Here is a short list of in
 
   * H. Li continues collaboration on region pinning for G1 ([JEP-423](https://openjdk.java.net/jeps/423)).
 
-  * We are experimenting on reducing footprint even further in [JDK-8210708](https://bugs.openjdk.java.net/browse/JDK-8210708). Hypothetical memory consumption after that change could look like the cyan line in the graph below if that were integrated:
+  * We are experimenting on reducing footprint even further in [JDK-8210708](https://bugs.openjdk.java.net/browse/JDK-8210708). Hypothetical native memory consumption after that change could look like the cyan line in the graph below if that were integrated:
   
-    ![Memory usage BigRAMTester 20GB](/assets/20220216-bigramtester-memoryusage-projected.png)
+    ![Native memory usage BigRAMTester 20GB](/assets/20220216-bigramtester-memoryusage-projected.png)
 
-    For this application it is a coincidence that the savings by removing a mark bitmap is almost the same as remembered set usage. Typically the remembered sets of Java applications are much smaller than in this case, so the relative gain in memory footprint would be much higher.
-    Note that other collectors that use two bitmaps (Parallel, ZGC) (roughly) at least use as much memory as indicated by the yellow "Floor" line.
+    For this application it is a coincidence that the savings by removing a mark bitmap is almost the same as remembered set usage. Typically the remembered sets of Java applications are much smaller than in this case, so the relative gain in native memory footprint would be much higher.
+    Note that other collectors that use two bitmaps (Parallel, ZGC) (roughly) at least use as much native memory as indicated by the yellow "Floor" line.
 
   * The runtime team is working on archive heap objects support for Parallel GC in [JDK-8274788](https://bugs.openjdk.java.net/browse/JDK-8274788)
 
