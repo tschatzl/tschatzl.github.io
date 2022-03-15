@@ -14,7 +14,7 @@ There is no particular timeline associated to the JEP, and the authors "[...] ex
 
 The full list of changes for the entire Hotspot GC subcomponent is [here](https://bugs.openjdk.java.net/browse/JDK-8269294?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2218%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc%2C%20gc%2C%20gc%2C%20gc%2C%20gc)), clocking in at 300 changes in total. No surprises here.
 
-A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows that the changes this release were relatively minor: [JDK-8267186](https://bugs.openjdk.java.net/browse/JDK-8267186) added string deduplication, and there is now a PPC64 port [JDK-8274851](https://bugs.openjdk.java.net/browse/JDK-8274851). There were also a few usability improvements and some bugfixes. However, generational ZGC is under very heavy development - you can follow development [here](https://github.com/openjdk/zgc/tree/zgc_generational), look forward to that.
+A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows that the changes this release were relatively minor: [JDK-8267186](https://bugs.openjdk.java.net/browse/JDK-8267186) added string deduplication, and there is now a PPC64 port ([JDK-8274851](https://bugs.openjdk.java.net/browse/JDK-8274851)). There were also a few usability improvements and some bugfixes. However, generational ZGC is under very heavy development - you can follow development [here](https://github.com/openjdk/zgc/tree/zgc_generational), look forward to that.
 
 ## Generic improvements
 
@@ -61,7 +61,7 @@ There have been quite a few user-visible changes specific to G1 this release:
 
     The graph above shows pause times of a SPECjbb2015 run with fixed injection rate (constant load) in blue on JDK 17 - as expected, pause times are basically flat. The purple line shows pause time with regular induced evacuation failures (every fifth garbage collection or so) on JDK 17 - showing significantly increased pause time. JDK 18 improves upon that, shown in the yellow graph. In this case, pause times are even below the undisturbed pause time line.
 
-    While much better than JDK 17 behavior, this is of course suboptimal, as it means that G1 does more (although shorter) garbage collection than necessary. Ergonomics do not cope well with the added regions promoted to Old generation as indicated in the list of issues at the end [here](/2021/06/28/evacuation-failure.html).
+    While much better than JDK 17 behavior, this is of course suboptimal, as it means that G1 does more (although shorter) garbage collections than necessary. Ergonomics do not cope well with the added regions promoted to Old generation as indicated in the list of issues at the end [here](/2021/06/28/evacuation-failure.html).
     
     An example for an improvement to fix this could be [JDK-8254739](https://bugs.openjdk.java.net/browse/JDK-8254739).
   
@@ -97,7 +97,6 @@ Of course we have long since begun working on JDK 19. Here is a short list of in
     ![Native memory usage BigRAMTester 20GB](/assets/20220216-bigramtester-memoryusage-projected.png)
 
     For this application it is a coincidence that the savings by removing a mark bitmap is almost the same as remembered set usage. Typically the remembered sets of Java applications are much smaller than in this case, so the relative gain in native memory footprint would be much higher.
-    Note that other collectors that use two bitmaps (Parallel, ZGC) (roughly) at least use as much native memory as indicated by the yellow "Floor" line.
 
   * The runtime team is working on archive heap objects support for Parallel GC in [JDK-8274788](https://bugs.openjdk.java.net/browse/JDK-8274788)
 
