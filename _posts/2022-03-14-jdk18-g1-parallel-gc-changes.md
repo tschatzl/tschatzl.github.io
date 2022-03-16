@@ -8,7 +8,7 @@ tags: [GC, G1, Parallel, Serial JDK 18, Performance]
 
 Time flew by and JDK 18 GA is [around the corner](https://openjdk.java.net/projects/jdk/18/). Let me summarize changes and in particular improvements in Hotspot´s stop-the-world garbage collectors in that release - G1 and Parallel GC - for another time. :)
 
-There is no delivered JEP particular to the garbage collection in this release, but one that will have big impact on garbage collection in general: [JEP 421: Deprecate Finalization for Removal](https://openjdk.java.net/jeps/421). The presence of finalizers imposes some performance penalty to garbage collectors in addition to significant code complexity. Personally as a GC engineer I am looking forward to be able to shed them. Finalizers also have so many usage drawbacks as pointed out in the JEP that it seems almost impossible to use in a reliable and safe way anyway.
+There is no delivered JEP particular to the garbage collection area for this release, but one that will have big impact on garbage collection in general: [JEP 421: Deprecate Finalization for Removal](https://openjdk.java.net/jeps/421). The presence of finalizers imposes some performance penalty to garbage collectors in addition to significant code complexity. Personally as a GC engineer I am looking forward to be able to shed them. Finalizers also have so many usage drawbacks as pointed out in the JEP that it seems almost impossible to use in a reliable and safe way anyway.
 
 There is no particular timeline associated to the JEP, and the authors "[...] expect a lengthy transition period before removing finalization [...]", so finalization will stay for a while at least.
 
@@ -20,7 +20,7 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
   * All OpenJDK garbage collectors now support string deduplication as explained in [JEP 192](https://openjdk.java.net/jeps/192). Parallel GC implemented support with [JDK-8267185](https://bugs.openjdk.java.net/browse/JDK-8267185), Serial GC with [JDK-8272609](https://bugs.openjdk.java.net/browse/JDK-8272609) and ZGC with [JDK-8267186](https://bugs.openjdk.java.net/browse/JDK-8267186). Note that the implementation differs from what has been explained in the JEP, but the basic principle still applies. Enable using the `-XX:+UseStringDeduplication` option.
   
-  * V. Chand [contributed a change](https://bugs.openjdk.java.net/browse/JDK-8272773) that allows configuration of the card table card size. The `-XX:GCCardSizeInBytes` can be used to change this value, with allowable values of `128`, `256`, `512` and `1024` (the last is 64 bit only).
+  * V. Chand [contributed a change](https://bugs.openjdk.java.net/browse/JDK-8272773) that allows configuration of the card table card size. The `-XX:GCCardSizeInBytes` can be used to change this value, with allowed values of `128`, `256`, `512` and `1024` (the last is 64 bit only).
 
     Changing this value can have significant impact on pause time length. Since this is an interesting topic to me, I wrote an [extra blog post](/2022/02/15/card-table-card-size.html) containing a more elaborate discussion.
 
@@ -59,7 +59,7 @@ There have been quite a few user-visible changes specific to G1 this release:
   
     ![Pause times with induced evacuation failures](/assets/20220217-evac-failure-improvements.png) 
 
-    The graph above shows pause times of a SPECjbb2015 run with fixed injection rate (constant load) in blue on JDK 17 - as expected, pause times are basically flat. The purple line shows pause time with regular induced evacuation failures (every fifth garbage collection or so) on JDK 17 - showing significantly increased pause time. JDK 18 improves upon that, shown in the yellow graph. In this case, pause times are even below the undisturbed pause time line.
+    The graph above shows pause times of a SPECjbb2015 run with fixed injection rate (constant load) in blue on JDK 17 - as expected, pause times are basically flat. The purple line shows pause time with regular induced evacuation failures (every fifth garbage collection or so) on JDK 17 - having significantly increased pause time. JDK 18 improves upon that, shown in the yellow line. In this case, pause times are even below the undisturbed pause time run.
 
     While much better than JDK 17 behavior, this is of course suboptimal, as it means that G1 does more (although shorter) garbage collections than necessary. Ergonomics do not cope well with the added regions promoted to Old generation as indicated in the list of issues at the end [here](/2021/06/28/evacuation-failure.html).
     
@@ -72,7 +72,7 @@ There have been quite a few user-visible changes specific to G1 this release:
 
     ![Repro pause times](/assets/20220216-repro-pause-times.png)
     
-    The graph above shows the problem: with JDK 11 (blue) pause times are fairly stable throughout the measurement interval. In contrast to that, JDK 17 (without the fix, purple) starts off significantly faster, but at around second 330 there is a large spike in pause times. This is where some large `j.l.Object` array is put into the old generation because of its size. At that point garbage collections need to scan this array every time. Due to bad initial work distribution and work stealing not being good enough, on many core processors pauses increase.
+    The graph above shows the problem: with JDK 11 (blue) pause times are fairly stable throughout the measurement interval. In contrast to that, JDK 17 (without the fix, purple) starts off significantly faster, but at around second 330 there is a large spike in pause times. This is where some large `j.l.Object` array is put into the old generation because of its size. At that point garbage collections need to scan this array every time. Due to bad initial work distribution and work stealing not working well enough, on many core processors pauses increase.
 
     The fix contributed by W. Kemper improves the initial work distribution, getting the pause times back to normal, shown with the JDK 18 (yellow) line. This change has already been backported to latest JDK 17, so make sure you are up to date.
 
@@ -84,7 +84,7 @@ Of course we have long since begun working on JDK 19. Here is a short list of in
 
   * Some potential starvation issue in work distribution in G1 ([JDK-8280396](https://bugs.openjdk.java.net/browse/JDK-8280396)) and Parallel GC ([JDK-8280705](https://bugs.openjdk.java.net/browse/JDK-8280705)) Full GC causing long pauses with high variance were already integrated.
 
-  * As pointed out in the review for [JDK-8278824](https://github.com/openjdk/jdk/pull/6840#issuecomment-994936159) and above, issues in work distribution have been found. Selection of victims to steal work from and actual stealing are somewhat inefficient particularly with higher thread counts.
+  * As pointed out in the review for [JDK-8278824](https://github.com/openjdk/jdk/pull/6840#issuecomment-994936159) and above, issues in work distribution during garbage collection have been found. Selection of victims to steal work from and actual stealing are somewhat inefficient particularly with higher thread counts.
 
     ![Repro pause times](/assets/20220216-repro-pause-times-proto.png)
 
@@ -98,7 +98,7 @@ Of course we have long since begun working on JDK 19. Here is a short list of in
 
     For this application it is a coincidence that the savings by removing a mark bitmap is almost the same as remembered set usage. Typically the remembered sets of Java applications are much smaller than in this case, so the relative gain in native memory footprint would be much higher.
 
-  * The runtime team is working on archive heap objects support for Parallel GC in [JDK-8274788](https://bugs.openjdk.java.net/browse/JDK-8274788)
+  * The runtime team is working on archive heap objects support for Parallel GC in [JDK-8274788](https://bugs.openjdk.java.net/browse/JDK-8274788).
 
 More to come :)
 
