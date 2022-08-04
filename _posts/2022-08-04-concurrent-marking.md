@@ -255,6 +255,35 @@ At this point G1 is ready to collect old generation regions to start the space r
 
 In the *Concurrent Cleanup* phase G1 clears the mark bitmap in the areas it just scribbled into (between `bottom` and `tams`) and resets `tams`es to prepare G1 for the next concurrent marking cycle. This phase completes the concurrent marking cycle.
 
+### Traceability in the VM ###
+
+Tracking the cycle in G1 using logs is simple - `-Xlog:gc,gc+marking` prints the current concurrent mark cycle state and run-time. Here is output from one random log I had:
+
+```
+[441.432s][info][gc        ] GC(119) Pause Young (Concurrent Start) (G1 Evacuation Pause) 16928M->16520M(20480M) 199.167ms
+[441.432s][info][gc        ] GC(120) Concurrent Mark Cycle
+[441.432s][info][gc,marking] GC(120) Concurrent Clear Claimed Marks
+[441.432s][info][gc,marking] GC(120) Concurrent Clear Claimed Marks 0.016ms
+[441.432s][info][gc,marking] GC(120) Concurrent Scan Root Regions
+[441.502s][info][gc,marking] GC(120) Concurrent Scan Root Regions 70.532ms
+[441.502s][info][gc,marking] GC(120) Concurrent Mark
+[441.502s][info][gc,marking] GC(120) Concurrent Mark From Roots
+[443.770s][info][gc,marking] GC(120) Concurrent Mark From Roots 2267.531ms
+[443.770s][info][gc,marking] GC(120) Concurrent Preclean
+[443.770s][info][gc,marking] GC(120) Concurrent Preclean 0.032ms
+[443.771s][info][gc,marking] GC(120) Concurrent Mark 2268.438ms
+[443.771s][info][gc        ] GC(120) Pause Remark 16880M->16880M(20480M) 0.718ms
+[443.771s][info][gc,marking] GC(120) Concurrent Rebuild Remembered Sets and Scrub Regions
+[445.328s][info][gc,marking] GC(120) Concurrent Rebuild Remembered Sets and Scrub Regions 1556.808ms
+[445.328s][info][gc        ] GC(120) Pause Cleanup 17184M->17184M(20480M) 0.383ms
+[445.328s][info][gc,marking] GC(120) Concurrent Cleanup for Next Mark
+[445.343s][info][gc,marking] GC(120) Concurrent Cleanup for Next Mark 15.138ms
+[445.343s][info][gc        ] GC(120) Concurrent Mark Cycle 3911.573ms
+
+```
+
+This log snippet shows what you would expect: the phases are executed in the order described. There are also corresponding JFR events.
+
 ## Differences to original G1 ##
 
 The text above explains the concurrent marking cycle and how its single bitmap is used during that time after the [JDK-8210708](https://bugs.openjdk.org/browse/JDK-8210708) change in JDK 20. Previously, the concurrent cycle has been close to what is described in the G1 [paper](https://dl.acm.org/doi/10.1145/1029873.1029879). The main difference is that it maintained *two* marking bitmaps, with corresponding *two* `tams`es per region. One set of bitmap and `tams` contains the "previous" results of the marking that are used for determining liveness of objects until the "next" marking bitmap had been built completely. The *Remark* pause swapped these, making the "next" bitmap the "previous" bitmap, and clearing the previously "previous" bitmap for use in the next concurrent marking cycle.
