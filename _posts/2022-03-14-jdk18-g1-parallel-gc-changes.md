@@ -28,7 +28,8 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
  * Serial GC adds **support for archived heap objects** in [JDK-8273508](https://bugs.openjdk.java.net/browse/JDK-8273508). This can reduce startup time significantly. Usage is the same as in G1.
 
-## G1 GC
+## G1 GC ##
+{: #g1gc }
 
 There have been quite a few user-visible changes specific to G1 this release:
 

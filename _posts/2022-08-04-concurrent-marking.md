@@ -290,7 +290,7 @@ The text above explains the concurrent marking cycle and how its single bitmap i
 
 So G1 always knew which objects within the regions were live using the "previous" marking.
 
-The main disadvantage is that native memory usage for bitmaps is double the current mechanism: instead of 1.5% of the Java heap there has been need to keep 3% for this information. On large heaps this can be a considerable relative and absolute amount of space, particularly with the actual remembered sets [now taking much less space](2021/09/17/remembered-set-refactoring.html).
+The main disadvantage is that native memory usage for bitmaps is double the current mechanism: instead of 1.5% of the Java heap there has been need to keep 3% for this information. On large heaps this can be a considerable relative and absolute amount of space, particularly with the actual remembered sets [now taking much less space](/2022/03/14/jdk18-g1-parallel-gc-changes.html#g1gc).
 
 ## Impact Discussion ##
 
