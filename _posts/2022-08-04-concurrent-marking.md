@@ -5,9 +5,7 @@ date:   2022-08-04 12:00:00 +0200
 tags: [GC, G1, JDK 20, Performance, Memory, Marking]
 ---
 
-The recent change [JDK-8210708](https://bugs.openjdk.org/browse/JDK-8210708) fundamentally changed how G1 uses mark bitmaps to store liveness information: instead of recording this information using two bitmaps spanning the heap that G1 uses alternatingly, there is now only one bitmap. This not only changes how G1 uses the bitmap in many places in the garbage collector, but also reduces G1 garbage collector native memory consumption by a large amount, to be exact by 1.5% of Java heap size. I thought this were a great time to explain how the current concurrent marking cycle works and how G1 uses the bitmap in detail.
-
-In the future another post may describe how the remaining bitmap is used during garbage collections.
+The recent change [JDK-8210708](https://bugs.openjdk.org/browse/JDK-8210708) fundamentally changed how G1 uses mark bitmaps to store liveness information: instead of recording this information using two bitmaps spanning the heap that G1 uses alternatingly, there is now only one bitmap. This not only changes how G1 uses the bitmap in many places in the garbage collector, but also reduces G1 garbage collector native memory consumption by a large amount, to be exact by 1.5% of Java heap size. I thought this would be a great time to explain how the current concurrent marking cycle works and how G1 uses the bitmap in detail.
 
 As a side effect, this change also obsoleted one more significant part of the original G1 [paper](https://dl.acm.org/doi/10.1145/1029873.1029879).
 
@@ -19,9 +17,9 @@ After determining there is need for collecting garbage in the old generation, G1
 
 Section 2.5 of the G1 paper describes the data structures and how marking worked before this change. Here I will first recap the commonalities of these two implementations, while detailing the current process in full in the next section. Please refer to the paper for the old implementation.
 
-Concurrent marking in G1 uses a [snapshot-at-the-beginning](https://dl.acm.org/doi/10.1016/0164-1212%2890%2990084-Y)(SATB) algorithm - i.e. keep objects that were live at the start of marking live, G1 takes a virtual snapshot of the old generation heap contents at that time. Only the heap contents live at the start of that mark will be marked through, everything allocated after that event will be implicitly considered live and not traced through. This has the advantage of the amount of objects to be examined for liveness analysis is fixed, while at the same time objects that may have become dead after that snapshot will not be reclaimed. Reclaiming this garbage needs another concurrent marking cycle.
+Concurrent marking in G1 uses a [snapshot-at-the-beginning](https://dl.acm.org/doi/10.1016/0164-1212%2890%2990084-Y)(SATB) algorithm - i.e. keep objects that were live at the start of marking live. G1 takes a virtual snapshot of the old generation heap contents at that time. Only the heap contents live at the start of that mark will be marked through, everything allocated after that event will be implicitly considered live and not traced through. This has the advantage of the amount of objects to be examined for liveness analysis is fixed, while at the same time objects that may have become dead after that snapshot will not be reclaimed. Reclaiming this new garbage needs another concurrent marking cycle.
 
-In G1, the main advantage of having fixed data to work on with (simple) guaranteed termination properties has been considered to be more important than being more thorough with the amount of garbage you can find.
+Having fixed data to work on provides simple guaranteed termination properties. The design of G1 considers this more important that earlier reclamation of objects that become garbage during the marking cycle. Further because G1 can interleave young collections with the concurrent old collection, this restriction doesn't apply to recently allocated objects, which can still be reclaimed quickly.
 
 To keep the SATB invariant during concurrent marking, G1 uses a pre-write barrier (e.g. given an assignment `x.a = y`) executed before the assignment of the new value to save the old value like the following:
 
@@ -35,24 +33,24 @@ To keep the SATB invariant during concurrent marking, G1 uses a pre-write barrie
   x.a = y                  // Actual assignment
 ```
 
-This pre-write barrier adds the previous value of `x.a` if not null (there is nothing to do for null references, and many writes, like initializing writes, overwrite null values) in case marking is active to per-thread buffers of references to be processed. The values in these per-thread buffers are treated as roots for marking.
+This pre-write barrier adds the previous value of `x.a` (if not null as there is nothing to do for null references, and many writes, like initializing writes, overwrite null values) to per-thread buffers of references to be processed. The values in these per-thread buffers are treated as roots for marking.
 
 Section 2.5.3 of the G1 paper gives some more details about the barrier design.
 
 ### Data structures in use ###
 
-The result of concurrent marking is a single **bitmap** where for every object that is live, the single bit corresponding to the start of these objects is set (i.e. marked). Since objects may start at any location aligned to minimum object alignment, default minimum object alignment is eight bytes (`-XX:ObjectAlignmentInBytes`) and one byte in the bitmap contains eight bits, the bitmap uses around 1/64th of the Java heap (= ~1.5%).
+The result of concurrent marking is a single **bitmap** where, for every object that is live, the single bit corresponding to the start of the objects is set (i.e. marked). Objects may start at any location aligned to minimum object alignment, the default minimum object alignment is eight bytes (`-XX:ObjectAlignmentInBytes`), and one byte in the bitmap contains eight bits. So the bitmap uses around 1/64th of the Java heap (= ~1.5%).
 
 G1 uses **fingers** (similar as described [here](https://dl.acm.org/doi/10.1145/362422.362480)) and explicit **mark stacks** to implement the grey set in the [tri-color marking abstraction](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Tri-color_marking).
 
-As G1 uses multiple mark threads, so in addition to a **global finger** there are per-thread **local fingers** and similarly in addition to a global **mark stack** there are per-thread **local mark stacks**.
+Because G1 uses multiple mark threads, in addition to a **global finger** there are per-thread **local fingers**. Similarly, in addition to a global **mark stack** there are per-thread **local mark stacks**.
 
-In the tri-color marking abstraction implementation in G1, white objects are objects without a mark on the bitmap; black objects are marked on the bitmap and to the "left" of (are located at a lower address than) the global finger and *not* on any of the mark stacks. An object is grey if it is marked on the bitmap and on one of the mark stacks to the "left" of the global finger or to the right of (located at a higher address than) the global finger.
+In the tri-color marking abstraction implementation in G1, white objects are objects without a mark on the bitmap. Black objects are marked on the bitmap and to the "left" of (are located at a lower address than) the global finger and *not* on any of the mark stacks. An object is grey if it is marked on the bitmap and either (1) it is to the left of the global finger and on one of the mark stacks, or (2) it is to the right of (located at a higher address than) the global finger.
 Since at the end of marking the mark stacks are empty and the global finger at the highest address in the Java heap everything that is marked on the bitmap is black.
 
-The use of the global finger for marking is an optimization: It reduces the amount of objects pushed on the mark stacks by roughly 50% as G1 only ever needs to push newly discovered live objects to the left of the global finger. This reduces global mark stack size.
+The use of the global finger for marking is an optimization. Newly discovered live objects only need to be pushed on the mark stacks if they are to the left of the global finger. This reduces the space used for mark stacks by roughly 50%.
 
-To take the virtual snapshot of the Java heap at the start of marking, for every region G1 records the current value of `top` that denotes where the last allocation into that region ended as **top-at-mark-start (TAMS)** pointer. Areas between the region's `bottom` and its `tams` are going to be traced through, areas above need not and are not.
+To take the virtual snapshot of the Java heap at the start of marking, for every region G1 records the current value of `top` that denotes where the last allocation into that region ended as the **top-at-mark-start (TAMS)** pointer. Areas between the region's `bottom` and its `tams` are going to be traced through, areas above need not and are not.
 
 ### Concurrent Marking in G1 ###
 
