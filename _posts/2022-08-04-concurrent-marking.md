@@ -54,7 +54,7 @@ To take the virtual snapshot of the Java heap at the start of marking, for every
 
 ### Concurrent Marking in G1 ###
 
-The **Concurrent Mark Cycle** comprises of several steps in G1, a few of which are directly related to marking, i.e. tracing the live object graph, while others are about managing VM and GC data structures that use the marking information to prepare for subsequent garbage collections. This section will go into detail on the former, but will only briefly touch the others or only relevant parts.
+The **Concurrent Mark Cycle** comprises several steps in G1, a few of which are directly related to marking, i.e. tracing the live object graph, while others are about managing VM and GC data structures that use the marking information to prepare for subsequent garbage collections. This section will go into detail on the former, but will only briefly touch the others or only relevant parts.
 
 Figure 7.2. of the [tuning guide](https://docs.oracle.com/en/java/javase/18/gctuning/garbage-first-g1-garbage-collector1.html#GUID-F1BE86FA-3EDC-4D4F-BDB4-4B044AD83180) shows how concurrent marking is related to pauses. In the following small state diagram showing a breakdown of the phases of the concurrent cycle these are marked with `(Pause)`:
 
@@ -165,7 +165,7 @@ In this pause, G1 finalizes the marking by draining all remaining SATB buffers, 
 
 This marking finalization phase may cause the global mark stack to overflow - in that case, G1 resets the global finger and per-thread marking state and starts another *Concurrent Mark* round.
 
-After finalizing the marking the *Remark* pause processes `j.l.ref.References`, unloads classes, reclaims completely empty regions and selects old generation regions which may be evacuated later based on the amount of garbage in them. The selected regions get their remembered sets rebuilt in the following concurrent phase so that they can be evacuated in mixed collections.
+After finalizing the marking, the *Remark* pause processes `j.l.ref.References`, unloads classes, reclaims completely empty regions and selects old generation regions which may be evacuated later based on the amount of garbage in them. The selected regions get their remembered sets rebuilt in the following concurrent phase so that they can be evacuated in mixed collections.
 
 The state of the region's contents and relevant marking data structures at the start of the Remark pause may look like the following:
 
@@ -206,7 +206,7 @@ Note that how `tams` and `tars` are different: one indicates the `top` at mark s
 
 To track the current location from which the regions are parsable (until `top`), for every region G1 maintains a **parsable bottom (PB)** which is equivalent to `tams` at this point (and simply equal to `bottom` at any other time).
 
-The reason for using a separate pointer is that `tams` and `pb` have different purposes and meaning: the former indicates up to what address there may be marks on the bitmap; the other indicates from which address on the region is parsable. While the same at the *Remark* pause, their values will diverge quickly.
+The reason for using a separate pointer is that `tams` and `pb` have different purposes and meaning: the former indicates up to what address there may be marks on the bitmap; the other indicates from which address on the region is parsable. While the same in the *Remark* pause, their values will diverge quickly.
 
 #### Concurrent Rebuild Remembered Sets and Scrub Regions ####
 
