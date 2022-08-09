@@ -19,7 +19,7 @@ Section 2.5 of the G1 paper describes the data structures and how marking worked
 
 Concurrent marking in G1 uses a [snapshot-at-the-beginning](https://dl.acm.org/doi/10.1016/0164-1212%2890%2990084-Y)(SATB) algorithm - i.e. keep objects that were live at the start of marking live. G1 takes a virtual snapshot of the old generation heap contents at that time. Only the heap contents live at the start of that mark will be marked through, everything allocated after that event will be implicitly considered live and not traced through. This has the advantage of the amount of objects to be examined for liveness analysis is fixed, while at the same time objects that may have become dead after that snapshot will not be reclaimed. Reclaiming this new garbage needs another concurrent marking cycle.
 
-Having fixed data to work on provides simple guaranteed termination properties. The design of G1 considers this more important that earlier reclamation of objects that become garbage during the marking cycle. Further because G1 can interleave young collections with the concurrent old collection, this restriction doesn't apply to recently allocated objects, which can still be reclaimed quickly.
+Having fixed data to work on provides simple guaranteed termination properties. The design of G1 considers this more important than earlier reclamation of objects that become garbage during the marking cycle. Further because G1 can interleave young collections with the concurrent old collection, this restriction doesn't apply to recently allocated objects, which can still be reclaimed quickly.
 
 To keep the SATB invariant during concurrent marking, G1 uses a pre-write barrier (e.g. given an assignment `x.a = y`) executed before the assignment of the new value to save the old value like the following:
 
@@ -33,7 +33,7 @@ To keep the SATB invariant during concurrent marking, G1 uses a pre-write barrie
   x.a = y                  // Actual assignment
 ```
 
-This pre-write barrier adds the previous value of `x.a` (if not null as there is nothing to do for null references, and many writes, like initializing writes, overwrite null values) to per-thread buffers of references to be processed. The values in these per-thread buffers are treated as roots for marking.
+This pre-write barrier adds the previous value of `x.a` (if not `null` as there is nothing to do for `null` references, and many writes, like initializing writes, overwrite `null` values) to per-thread buffers of references to be processed. The values in these per-thread buffers are treated as roots for marking.
 
 Section 2.5.3 of the G1 paper gives some more details about the barrier design.
 
@@ -118,7 +118,7 @@ The single `*` above the start of the `E` object indicates that that object had 
 
 The *Concurrent Start* pause did not follow references from the young generation (survivors and promoted objects) into the old generation during the pause. So the *Concurrent Scan Root Regions* phase concurrently walks all objects in the previously recorded root regions, and marks all their references into the snapshotted areas (below `tams`).
 
-In the example above, this would be the objects `R` to `V` in Region N that are about to be scanned.
+In the example, the objects `R` to `V` in Region N are about to be scanned.
 
 After *Concurrent Root Region Scan* more objects are marked on the bitmap, in this case `H` as the figure shows.
 
@@ -149,7 +149,7 @@ When scanning through the bitmap of a region, the mark thread advances its *loca
 
   * if that reference is `null`, skip it. `null` references can be ignored.
   * if that reference points outside the snapshotted area of a region (above a region's `tams`) it can be ignored.
-  * try to atomically mark that referenced object:
+  * otherwise try to atomically mark that referenced object:
     * if that reference had already been marked, then do nothing. Already marked objects are either black (have been processed) or grey and recorded on the mark stacks if they were to the left of the global finger. Grey objects will be visited automatically when advancing the global finger or looking at the mark stack.
     * if that reference had been unmarked, and that reference is to the left to the global finger, push it on the local mark stack. This is not required for referenced objects to the right of the global finger as they will be processed automatically.
 
