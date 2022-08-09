@@ -116,11 +116,11 @@ The single `*` above the start of the `E` object indicates that that object had 
 
 #### Concurrent Scan Root Regions ####
 
-The *Concurrent Start* pause did not follow references from the young generation (survivors and promoted objects) into the old generation during the pause. So the *Concurrent Scan Root Regions* phase concurrently walks all objects in the previously recorded root regions, and marks all references into the to-be-marked-through areas below `tams`.
+The *Concurrent Start* pause did not follow references from the young generation (survivors and promoted objects) into the old generation during the pause. So the *Concurrent Scan Root Regions* phase concurrently walks all objects in the previously recorded root regions, and marks all their references into the snapshotted areas (below `tams`).
 
 In the example above, this would be the objects `R` to `V` in Region N that are about to be scanned.
 
-After root scanning typically more objects are marked, in this case `H` as the figure shows.
+After *Concurrent Root Region Scan* more objects are marked on the bitmap, in this case `H` as the figure shows.
 
 ```
              Region 0                     Region 1                             Region N            
@@ -137,7 +137,7 @@ After root scanning typically more objects are marked, in this case `H` as the f
 
 G1 makes sure that this concurrent phase has been completed before the next GC, at worst delaying start of the next garbage collection until completed. If G1 did not do that, there would be problems with objects not surviving that next GC wrt to SATB.
 
-This work is done using multiple concurrent threads.
+Multiple concurrent threads are used in this phase.
 
 #### Concurrent Mark ####
 
@@ -247,7 +247,7 @@ The *Cleanup* pause refines the collection set candidate list: G1 calculates an 
 
 Often, these regions that were dropped would not reclaim much space anyway, sometimes much less even than is used up by promotion, taking a lot of time to collect and even worse just lengthen the time until the next marking.
 
-At this point G1 is ready to collect old generation regions to start the space reclamation phase. However to keep [minimum mutator utilization](https://dl.acm.org/doi/10.1145/381694.378823) G1 is forced to wait until another, final young-only **Prepare Mixed** garbage collection before starting mixed collections.
+At this point G1 is ready to collect old generation regions to start the space reclamation phase. However to keep [minimum mutator utilization](https://dl.acm.org/doi/10.1145/381694.378823) (MMU) requirements G1 is forced to wait until another, final young-only **Prepare Mixed** garbage collection before starting mixed collections. The mutator phase the *Cleanup* pause interrupted (also observing MMU) has been sized to keep MMU using predictions for a non-mixed collection pause. Changing the type of garbage collection invalidates assumptions made during that calculation.
 
 #### Concurrent Cleanup ####
 
