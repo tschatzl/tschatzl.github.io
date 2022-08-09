@@ -148,6 +148,7 @@ Worker threads claim regions to scan the bitmap between that region's `bottom` a
 When scanning through the bitmap of a region, the mark thread advances its *local finger* from mark to mark. If the thread encounters a mark, the corresponding object's references are examined:
 
   * if that reference is `null`, skip it. `null` references can be ignored.
+  * if that reference points outside the snapshotted area of a region (above a region's `tams`) it can be ignored.
   * try to atomically mark that referenced object:
     * if that reference had already been marked, then do nothing. Already marked objects are either black (have been processed) or grey and recorded on the mark stacks if they were to the left of the global finger. Grey objects will be visited automatically when advancing the global finger or looking at the mark stack.
     * if that reference had been unmarked, and that reference is to the left to the global finger, push it on the local mark stack. This is not required for referenced objects to the right of the global finger as they will be processed automatically.
