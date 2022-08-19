@@ -304,6 +304,8 @@ Usually the remembered set native memory usage for applications is much smaller,
 
 There are no significant differences in collection pause or concurrent mark cycle times in this benchmark before and after this change.
 
+(Observant readers might have noticed a change in the shape of the graph and the regression in the memory usage between floor and peak of the respective graph between JDK 18 and JDK 20: this is being fixed in [JDK-8292654](https://bugs.openjdk.org/browse/JDK-8292654)).
+
 ## Summary
 
 Hope this helps :) Please send comments, suggestions to me, [hotspot-gc-use@openjdk.java.net](mailto:hotspot-gc-use@openjdk.java.net) or [hotspot-gc-dev@openjdk.java.net](mailto:hotspot-gc-dev@openjdk.java.net).
