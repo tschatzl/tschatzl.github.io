@@ -93,8 +93,9 @@ Of course we have long since begun working on JDK 19. Here is a short list of in
 
   * H. Li continues collaboration on region pinning for G1 ([JEP-423](https://openjdk.java.net/jeps/423)).
 
+{: #memory-usage-jdk19-forecast }
   * We are experimenting on reducing footprint even further in [JDK-8210708](https://bugs.openjdk.java.net/browse/JDK-8210708). Hypothetical native memory consumption after that change could look like the cyan line in the graph below if that were integrated:
-  
+
     ![Native memory usage BigRAMTester 20GB](/assets/20220216-bigramtester-memoryusage-projected.png)
 
     For this application it is a coincidence that the savings by removing a mark bitmap is almost the same as remembered set usage. Typically the remembered sets of Java applications are much smaller than in this case, so the relative gain in native memory footprint would be much higher.

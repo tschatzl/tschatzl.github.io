@@ -291,6 +291,7 @@ So G1 always knew which objects within the regions were live using the "previous
 The main disadvantage of original G1 is that native memory usage for bitmaps is double of the current mechanism: instead of 1.5% of the Java heap there has been need to keep 3% for this information. On large heaps this can be a considerable relative and absolute amount of space, particularly with the actual remembered sets [now taking much less space](/2022/03/14/jdk18-g1-parallel-gc-changes.html#g1gc).
 
 ## Impact Discussion ##
+{: #impact }
 
 The following figure shows G1 native memory usage on the BigRAMTester benchmark with the same options as in earlier postings. For reference, I added JDK 17 memory usage (dark blue). JDK 18 significantly decreased that due to remembered set data structure improvements (pink), and JDK 20 with the changes introduced in [JDK-8210708](https://bugs.openjdk.org/browse/JDK-8210708) shows further significant reduction (cyan).
 
