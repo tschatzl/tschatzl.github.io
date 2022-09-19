@@ -31,9 +31,9 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
 ## G1 GC
 
-Except [JDK-8280396](https://bugs.openjdk.org/browse/JDK-8280396) that implements that same optimization mentioned above for Parallel GC for G1 Full GC there were no notable improvements.
+ * Except [JDK-8280396](https://bugs.openjdk.org/browse/JDK-8280396) that implements that same optimization mentioned above for Parallel GC for G1 Full GC there were no notable improvements.
 
-JDK 19 introduced a native memory usage [regression](https://bugs.openjdk.org/browse/JDK-8292654) very late in the JDK 19 release process so that the fix could not be integrated any more. The [release note](https://bugs.openjdk.org/browse/JDK-8293707) provides a workaround. The regression has already been addressed for JDK 19.0.1 and later.
+ * JDK 19 introduced a native memory usage [regression](https://bugs.openjdk.org/browse/JDK-8292654) very late in the JDK 19 release process so that the fix could not be integrated any more. The [release note](https://bugs.openjdk.org/browse/JDK-8293707) provides a workaround. The regression has already been addressed for JDK 19.0.1 and later.
 
 ## What's next
 
