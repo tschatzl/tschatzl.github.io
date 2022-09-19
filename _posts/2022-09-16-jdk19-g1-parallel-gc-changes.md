@@ -19,7 +19,7 @@ Other than that, the full list of changes for the entire Hotspot GC subcomponent
 
 A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows that the changes this release were minor: [JDK-8255495](https://bugs.openjdk.org/browse/JDK-8255495) added partial CDS support (class data is archived, but not heap objects), in addition to some bug fixes. For some time now the main focus has been on generational ZGC - you can follow development [here](https://github.com/openjdk/zgc/tree/zgc_generational), please look forward to it.
 
-## Parallel improvements
+## Parallel GC
 
   * Parallel GC now also supports **archived heap objects**. This feature has been added with [JDK-8274788](https://bugs.openjdk.org/browse/JDK-8274788).
 
@@ -29,7 +29,7 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
  * There were no notable changes for Serial GC.
 
-## G1 GC ##
+## G1 GC
 
 Except [JDK-8280396](https://bugs.openjdk.org/browse/JDK-8280396) that implements that same optimization mentioned above for Parallel GC for G1 Full GC there were no notable improvements.
 
