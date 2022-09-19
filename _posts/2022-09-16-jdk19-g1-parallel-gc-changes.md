@@ -21,7 +21,7 @@ A brief look over to [ZGC](https://wiki.openjdk.java.net/display/zgc/Main) shows
 
 ## Parallel improvements
 
-  * Parallel GC now also supports **archived heap objects** as explained in [JEP 192](https://openjdk.java.net/jeps/192). This feature has been added with [JDK-8267185](https://bugs.openjdk.org/browse/JDK-8274788).
+  * Parallel GC now also supports **archived heap objects**. This feature has been added with [JDK-8274788](https://bugs.openjdk.org/browse/JDK-8274788).
 
   * [JDK-8280705](https://bugs.openjdk.org/browse/JDK-8280705) improves work distribution in the first phase of full collection, sometimes yielding very good performance improvements.
 
