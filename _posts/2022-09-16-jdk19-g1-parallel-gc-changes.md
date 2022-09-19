@@ -13,7 +13,7 @@ Virtual threads introduce on-Java heap objects that contain thread stacks. These
 
 When Loom is not enabled via the preview option, these problems do not occur.
 
-JDK 8 got a maintenance release. The changes detailed [here](https://jcp.org/aboutJava/communityprocess/maintenance/jsr337/jsr337-mr4-changes.html)) describe changes to undefined behavior in `java.lang.ref.Reference` processing that could previously cause crashes. A side effect of this change is that reference processing in the garbage collectors could be improved a bit.
+JDK 8 got a maintenance release. The changes detailed [here](https://jcp.org/aboutJava/communityprocess/maintenance/jsr337/jsr337-mr4-changes.html) remove undefined behavior in `java.lang.ref.Reference` processing that could previously cause crashes. A side effect of this change is that reference processing in the garbage collectors could be improved a bit.
 
 Other than that, the full list of changes for the entire Hotspot GC subcomponent for JDK 19 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2219%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc%2C%20gc%2C%20gc%2C%20gc%2C%20gc)), showing around 200 changes in total being resolved or closed. Above two projects left their impact :)
 
