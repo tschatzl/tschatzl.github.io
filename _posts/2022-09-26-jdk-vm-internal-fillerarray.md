@@ -5,7 +5,7 @@ date:   2022-09-26 10:00:00 +0200
 tags: [GC, JDK 19]
 ---
 
-While writing the [JDK 19 update blog post](/2022/09/16/jdk19-g1-parallel-gc-changes.html) I strongly considered writing about the "new" objects (`jdk.vm.internal.FillerObject` and `jdk.vm.internal.FillerArray`) objects that may appear in heap dumps. I thought they were not that interesting, but it looks like people quickly [noticed them](https://old.reddit.com/r/java/comments/xlnw9q/the_mysterious_ljavainternalvmfillerarray/). This post describes their purpose after all.
+While writing the [JDK 19 update blog post](/2022/09/16/jdk19-g1-parallel-gc-changes.html) I strongly considered writing about the "new" (`jdk.vm.internal.FillerObject` and `jdk.vm.internal.FillerArray`) objects that may appear in heap dumps. I thought they were not that interesting, but it looks like people quickly [noticed them](https://old.reddit.com/r/java/comments/xlnw9q/the_mysterious_ljavainternalvmfillerarray/). This post describes their purpose after all.
 
 ## Background
 
