@@ -23,6 +23,7 @@ Since this post uses G1 to discuss the impact of this change, we need some more 
 
 The reason is that G1 allows independent evacuation of any [heap region](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-g1-garbage-collector1.html#GUID-15921907-B297-43A4-8C48-DC88035BC7CF), so every region needs its own remembered set. This is an additional set of cards per region, every card indicating a location where there might be a reference into that region.
 
+{: #refinement }
 * *While the mutator runs*, in G1 the card table only temporarily stores locations of potential references: in addition to marking the corresponding card, the mutator thread also stores that change into a thread-local log buffer if that card has not been marked before, that are periodically processed by concurrent refinement background threads. This concurrent refinement clears the mark on the card table (which in the meantime acts as a filter for additional refinement requests of the same card), scans the area corresponding to the card for references and populates the appropriate remembered sets.
 
 * *In the garbage collection pause*, the card table data structure is reused to first determine a combined remembered set for the whole [collection set](https://docs.oracle.com/en/java/javase/17/gctuning/garbage-first-g1-garbage-collector1.html#GUID-3A99AE6C-F80A-4565-A27C-B4AEDF5CDF71) (the `Merge Heap Roots` phase at `gc+phases=debug` log level), then scanned for references into that collection set similar to the other collectors (in the `Scan Heap Roots` phase).
