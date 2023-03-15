@@ -7,7 +7,7 @@ tags: [GC, G1, Parallel, Serial, JDK 20, Performance]
 
 Yet another JDK release that is on track - JDK 20 GA is [almost here](https://openjdk.java.net/projects/jdk/20/). Another opportunity to summarize changes and improvements in Hotspot´s stop-the-world garbage collectors for the JDK 20 release.
 
-This release does not contain any JEP for the garbage collection area, but it looks like [Generational ZGC](https://mail.openjdk.org/pipermail/jdk-dev/2023-March/007457.html) will be ready for JDK 21 :)
+This release does not contain any JEP for the garbage collection area, but the JEP for [Generational ZGC](https://mail.openjdk.org/pipermail/jdk-dev/2023-March/007457.html) reached Candidate status just recently. :)
 
 Other than that, the full list of changes for the entire Hotspot GC subcomponent for JDK 20 is [here](https://bugs.openjdk.org/browse/JDK-8298968?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2220%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc%2C%20gc%2C%20gc%2C%20gc%2C%20gc)), showing around 220 changes in total being resolved or closed.
 
