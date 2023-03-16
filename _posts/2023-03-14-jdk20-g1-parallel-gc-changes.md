@@ -71,9 +71,9 @@ Work for JDK 21 is already full steam ahead. Here is a short list of interesting
 
     Since "last-ditch" G1 Full collections occur only right after there had been a regular G1 Full Collection, the lengthening of that collection seems an acceptable trade-off to avoid VM failure.
 
-  * To improve the resilience of G1 against regions that failed evacuation (or future pinned regions) swamping old generation, there is [work](https://bugs.openjdk.org/browse/JDK-8140326) progressing on allowing G1 to evacuate these Old regions at _any_ garbage collection as soon as possible after they are generated.
+  * To improve the resilience of G1 against regions that failed evacuation (or are pinned in the future) swamping old generation, there is [work](https://bugs.openjdk.org/browse/JDK-8140326) progressing on allowing G1 to evacuate these Old regions at _any_ garbage collection as soon as possible after they are generated.
 
-    The current policy for regions that failed evacuation is to make them Old regions, which means G1 can not allocate into them any more, although most often they only contain a few live objects. They also do not have remembered sets, so the only way to reclaim space from them is waiting for the next concurrent marking to complete. If many regions are failing evacuation, potentially across multiple garbage collections, the Java heap fills up quickly with these typically very lightly occupied regions. This can easily lead to a Full GC.
+    The current policy for regions that failed evacuation is to make them Old regions, which means G1 can not allocate into them any more, although most often they only contain a few live objects. These regions also do not have remembered sets, so the only way to reclaim space from them is waiting for the next concurrent marking to complete. If many regions are failing evacuation, potentially across multiple garbage collections, the Java heap fills up quickly with these typically very lightly occupied regions. This can easily lead to a Full GC.
 
     This change will completely remove the previous assumption that young-only collections would never collect old generation regions. Although technically, G1 has already been trying to collect some humongous objects which are Old generation regions since JDK 8u65, so that assumption has not strictly held for a long time...
 
