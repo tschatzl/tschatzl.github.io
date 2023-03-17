@@ -41,6 +41,8 @@ Broadly speaking JDK 20 provides all items on that long "What's next" list in th
 
     Not only does the additional activity of refinement threads takes away cpu resources, but G1 also repeatedly refines the same cards without reducing the work left for the pause much.
 
+    Several G1 garbage collector options related to old refinement control were obsoleted, causing the VM to exit at startup when used. The [release note](https://bugs.openjdk.org/browse/JDK-8295819) details them.
+
     Taking mutator activity into account with the change, G1 better distributes refinement thread activity between pauses, and leaves more cards on the refinement task queues for longer, which reduces the rate of generation of new cards and achieves the user's intent (i.e. `-XX:G1RSetUpdatingPauseTimePercent`) more deterministically. In the end this often takes less cpu cycles away from the application, providing better throughput.
 
   * G1 uses thread-local allocation buffers (PLABs) to reduce synchronization overheads during the garbage collection pause. PLABs are resized based on recent allocation patterns to reduce unused space in these buffers at the end of the garbage collection pause. If there is little need for allocation, they shrink, otherwise they grow. This per-collection pause adaptation works well for applications that have fairly constant allocation between garbage collections; however this does not work well if allocation is extremely bursty. The PLABs will be too large a few garbage collections after there is little allocation during garbage collection, wasting space, or too small when allocation spikes, wasting cpu cycles reloading PLABs.
@@ -54,6 +56,8 @@ Broadly speaking JDK 20 provides all items on that long "What's next" list in th
   * JDK 20 disables preventive garbage collections by default with [JDK-8293861](https://bugs.openjdk.org/browse/JDK-8293861). Preventive garbage collections were introduced in JDK 19 to avoid G1 not having enough Java heap memory for evacuating objects (also called "evacuation failure") during garbage collection. Handling of regions that experienced an evacuation failure has traditionally been fairly slow, so the argument for that feature has been that it is better to do a garbage collection that does not have such an evacuation failure preemptively in the hope that it frees up enough memory to avoid these evacuation failures completely.
 
     The problem is how to anticipate this situation correctly. The predictions G1 used to determine whether to start a preventive collection proved to be suboptimal, and often started preventive collections unnecessarily and too early. This wastes time. There were also many cases where the preventive collection would not be triggered, making the application experience evacuation failures anyway. Finally, these kind of garbage collections made garbage collections more irregular, which if they occurred, generally made predictions harder.
+
+  * There is a new `GarbageCollectorMXBean` called `G1 Concurrent GC` introduced with [JDK-8297247](https://bugs.openjdk.org/browse/JDK-8297247) that reports the occurrence and durations of G1 Remark and Cleanup pauses. These pauses also update the `G1 Old Gen` `MemoryManagerMXBean` memory pool information now.
 
 In summary, I believe there are significant additions to garbage collection worth upgrading, even if only later with JDK 21.
 
