@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "JDK 21 G1/Parallel/Serial GC changes"
-date:   2023-08-03 12:00:00 +0200
+date:   2023-08-04 12:00:00 +0200
 tags: [GC, G1, Parallel, Serial, JDK 21, Performance]
 ---
 
