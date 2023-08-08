@@ -9,7 +9,7 @@ Yet another JDK release that is on track - JDK 20 GA is [almost here](https://op
 
 This release does not contain any JEP for the garbage collection area, but the JEP for [Generational ZGC](https://mail.openjdk.org/pipermail/jdk-dev/2023-March/007457.html) reached Candidate status just recently, so maybe it will be ready for JDK 21. :)
 
-Other than that, the full list of changes for the entire Hotspot GC subcomponent for JDK 20 is [here](https://bugs.openjdk.org/browse/JDK-8298968?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2220%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc%2C%20gc%2C%20gc%2C%20gc%2C%20gc)), showing around 220 changes in total being resolved or closed.
+Other than that, the full list of changes for the entire Hotspot GC subcomponent for JDK 20 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2220%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc)), showing around 220 changes in total being resolved or closed.
 
 ## Parallel GC
 
@@ -53,6 +53,7 @@ Broadly speaking JDK 20 provides all items on that long "What's next" list in th
 
     Better prediction makes G1 observe the pause time goal better (as specified by `-XX:MaxGCPauseMillis`), which reduces pause time overshoots and increases usage of the available pause time goal by using more young generation regions per garbage collection. This increases pause time within the allowed goal, but can decrease the number of garbage collections significantly. We have measured applications that spend 10-15% less time in garbage collection pauses with these changes.
 
+{: #preventive }
   * JDK 20 disables preventive garbage collections by default with [JDK-8293861](https://bugs.openjdk.org/browse/JDK-8293861). Preventive garbage collections were introduced in JDK 19 to avoid G1 not having enough Java heap memory for evacuating objects (also called "evacuation failure") during garbage collection. Handling of regions that experienced an evacuation failure has traditionally been fairly slow, so the argument for that feature has been that it is better to do a garbage collection that does not have such an evacuation failure preemptively in the hope that it frees up enough memory to avoid these evacuation failures completely.
 
     The problem is how to anticipate this situation correctly. The predictions G1 used to determine whether to start a preventive collection proved to be suboptimal, and often started preventive collections unnecessarily and too early. This wastes time. There were also many cases where the preventive collection would not be triggered, making the application experience evacuation failures anyway. Finally, these kind of garbage collections made garbage collections more irregular, which if they occurred, generally made predictions harder.
