@@ -5,11 +5,11 @@ date:   2023-08-04 12:00:00 +0200
 tags: [GC, G1, Parallel, Serial, JDK 21, Performance]
 ---
 
-JDK 21 GA is [on track](https://openjdk.java.net/projects/jdk/21/) - as well as this update for changes of the stop-the-world garbage collectors for OpenJDK for that release.
+JDK 21 GA is [on track](https://openjdk.java.net/projects/jdk/21/) - as well as this update for changes of the stop-the-world garbage collectors for OpenJDK for that release. ;)
 
-This release is also going to be designated as an LTS release by most if not all OpenJDK distributions. Please also have a look at previous blog posts for [JDK 18](http://localhost:4000/2022/03/14/jdk18-g1-parallel-gc-changes.html), [JDK 19](http://localhost:4000/2022/09/16/jdk19-g1-parallel-gc-changes.html), and [JDK 20](http://localhost:4000/2023/03/14/jdk20-g1-parallel-gc-changes.html) to get more details about what the upgrade from the last LTS, JDK 17, offers you in the garbage collection area.
+This release is going to be designated as an LTS release by most if not all OpenJDK distributions. Please also have a look at previous blog posts for [JDK 18](http://localhost:4000/2022/03/14/jdk18-g1-parallel-gc-changes.html), [JDK 19](http://localhost:4000/2022/09/16/jdk19-g1-parallel-gc-changes.html), and [JDK 20](http://localhost:4000/2023/03/14/jdk20-g1-parallel-gc-changes.html) to get more details about what the upgrade from the last LTS, JDK 17, offers you in the garbage collection area.
 
-Back to this release, before looking at stop-the-world garbage collectors, probably the most impactful change to garbage collection in this release is the introduction of [Generational ZGC](https://openjdk.org/jeps/439). It is an improvement over the Z Garbage Collector that maintains generations for young and old objects like the stop-the-world collectors, focusing garbage collection work on where most garbage is typically located. It significantly decreases required Java heap and CPU overhead to keep up with applications. To enable generation ZGC, along the `-XX:+UseZGC` flag use `-XX:+ZGenerational`.
+Back to this release, before looking at stop-the-world garbage collectors, probably the most impactful change to garbage collection in this release is the introduction of [Generational ZGC](https://openjdk.org/jeps/439). It is an improvement over the Z Garbage Collector that maintains generations for young and old objects like the stop-the-world collectors, focusing garbage collection work on where most garbage is created typically. It significantly decreases required Java heap and CPU overhead to keep up with applications. To enable generational ZGC, along the `-XX:+UseZGC` flag pass the flag `-XX:+ZGenerational`.
 
 Other than that, the full list of changes for the entire Hotspot GC subcomponent for JDK 20 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20issuetype%20in%20standardIssueTypes()%20AND%20status%20in%20(Resolved%2C%20Closed)%20AND%20fixVersion%20%3D%20%2221%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20in%20(gc)), showing around 250 changes in total being resolved or closed at the time of writing. This is a bit more than the previous releases.
 
@@ -33,13 +33,13 @@ Here are the JDK 21 user facing changes for G1:
 
   * Another somewhat related improvement for full collections ([JDK-8302215](https://bugs.openjdk.org/browse/JDK-8302215)) makes sure that the Java heap is more compact after full collection, reducing fragmentation a little.
 
-  * The so-called Hot Card Cache has been found to be without impact (at least) after concurrent refinement changes in JDK 20, and removed. The original intent of this data structure has been to collect locations where the application very frequently modifies references. These locations were put into this Hot Card Cache to be processed once in the next garbage collection, instead of constantly concurrently refine them. The reason why this removal can be interesting is that its data structures used a fairly large amount of native memory, that is 0.2% of the Java heap size, to operate. This native memory is now available for use for other purposes.
+  * The so-called Hot Card Cache has been found to be without impact (at least) after concurrent refinement changes in JDK 20, and removed. The intent of this data structure has been to collect locations where the application very frequently modifies references. These locations were put into this Hot Card Cache to be processed once in the next garbage collection, instead of constantly concurrently refine them. The reason why this removal can be interesting is that its data structures used a fairly large amount of native memory, that is 0.2% of the Java heap size, to operate. This native memory is now available for use for other purposes.
 
     The corresponding option `-XX:+/-UseHotCardCache` to toggle its use is now obsolete.
 
   * On applications with thousands of threads, in previous releases a significant amount of time of the pause could be spent in tearing down and setting up the (per-thread) TLABs. These two phases have been parallelized with [JDK-8302122](https://bugs.openjdk.org/browse/JDK-8302122) and [JDK-8301116](https://bugs.openjdk.org/browse/JDK-8301116) respectively.
 
-  * The preventive garbage collection feature has been completely removed with [JDK-8297639](https://bugs.openjdk.org/browse/JDK-8297639) for the reasons stated [previously](/2023/03/14/jdk20-g1-parallel-gc-changes.html#preventive).
+  * The preventive garbage collection feature has been removed completely with [JDK-8297639](https://bugs.openjdk.org/browse/JDK-8297639) for the reasons stated [previously](/2023/03/14/jdk20-g1-parallel-gc-changes.html#preventive).
 
 ## What's next
 
