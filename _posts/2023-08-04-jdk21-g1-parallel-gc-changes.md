@@ -45,7 +45,7 @@ Here are the JDK 21 user facing changes for G1:
 
 Work for JDK 22 has started, continuing right away with features that did not make the cut. Here is a short list of interesting changes that are already integrated or currently in development. As usual, there are no guarantees that they will make the next release ;).
 
-  * The change to improve the resilience of G1 against regions that failed evacuation swamping the old generation has been out for review for some time now (([JDK-8140326](https://bugs.openjdk.org/browse/JDK-8140326), [PR](https://github.com/openjdk/jdk/pull/14220))) and is about to be pushed.
+  * The change to improve the resilience of G1 against regions that failed evacuation swamping the old generation has been out for review for some time now ([JDK-8140326](https://bugs.openjdk.org/browse/JDK-8140326), [PR](https://github.com/openjdk/jdk/pull/14220)) and is about to be pushed.
 
     This change removes the previous limitation in G1 that only certain [types of young collections](https://docs.oracle.com/en/java/javase/20/gctuning/garbage-first-g1-garbage-collector1.html#GUID-F1BE86FA-3EDC-4D4F-BDB4-4B044AD83180) could reclaim space in old generation regions. With this change any young collection may evacuate old generation regions if they meet the usual requirements.
     
