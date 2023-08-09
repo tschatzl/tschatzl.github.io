@@ -51,6 +51,8 @@ Work for JDK 22 has started, continuing right away with features that did not ma
     
     Currently this helps with reclaiming space after an [evacuation failure](https://docs.oracle.com/en/java/javase/20/gctuning/garbage-first-g1-garbage-collector1.html#GUID-BE157AF6-29E7-461A-82CF-50C1978785DA) quickly, but among other interesting ideas, this change provides the necessary infrastructure to allow efficient and timely evacuation of [pinned regions](https://openjdk.org/jeps/423) right after they become un-pinned.
 
+  * With above change, [region pinning](https://openjdk.org/jeps/423) is only one PR away.
+
   * The fix to the long standing problem of the GCLocker starving threads from progress and causing unnecessary Out-Of-Memory exceptions is in development [JDK-8308507](https://bugs.openjdk.org/browse/JDK-8308507) and actually [out for review](https://github.com/openjdk/jdk/pull/14077).
 
 More to come in the next months :)
