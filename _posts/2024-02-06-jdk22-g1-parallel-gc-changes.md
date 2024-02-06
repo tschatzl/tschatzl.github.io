@@ -57,7 +57,7 @@ Here are the JDK 22 user facing changes for G1:
 
     On another note this change removes the previous (self-imposed) limitation in G1 that only certain [types of young collections](https://docs.oracle.com/en/java/javase/21/gctuning/garbage-first-g1-garbage-collector1.html#GUID-F1BE86FA-3EDC-4D4F-BDB4-4B044AD83180) could reclaim space in old generation regions. Now any young collection may evacuate old generation regions if they meet some requirements.
 
-  * The [long journey](2021/06/28/evacuation-failure.html) to remove the use of the `GCLocker` in G1 is over, as [JDK-8318706](https://bugs.openjdk.org/browse/JDK-8318706) has been integrated and the [JEP 423: Region Pinning for G1](https://openjdk.org/jeps/423) completed.
+  * The [long journey](/2021/06/28/evacuation-failure.html) to remove the use of the `GCLocker` in G1 is over, as [JDK-8318706](https://bugs.openjdk.org/browse/JDK-8318706) has been integrated and the [JEP 423: Region Pinning for G1](https://openjdk.org/jeps/423) completed.
 
     In short, previously if an application accessed an array via the `Get/ReleasePrimitiveArrayCritical` methods when interfacing with JNI, no garbage collection could occur. This change modifies the garbage collection algorithm to keep these objects in place, "pinning" them and marking the corresponding region as such, but allow evacuation of any other regions or non-primitive arrays within pinned regions. The latter optimization is possible because `Get/ReleasePrimitiveArrayCritical` can only lock non-primitive array objects.
 
