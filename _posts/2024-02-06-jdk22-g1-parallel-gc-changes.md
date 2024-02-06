@@ -61,7 +61,7 @@ Here are the JDK 22 user facing changes for G1:
 
     In short, previously if an application accessed an array via the `Get/ReleasePrimitiveArrayCritical` methods when interfacing with JNI, no garbage collection could occur. This change modifies the garbage collection algorithm to keep these objects in place, "pinning" them and marking the corresponding region as such, but allow evacuation of any other regions or non-primitive arrays within pinned regions. The latter optimization is possible because `Get/ReleasePrimitiveArrayCritical` can only lock non-primitive array objects.
 
-    Java threads will now never stall due to JNI code any more with G1.
+    Now Java threads will never stall due to JNI code with G1.
 
   * There is some minor change in heap resizing during the Remark pause to make resizing a bit more consistent in [JDK-8314573](https://bugs.openjdk.org/browse/JDK-8314573). Heap resizing now calculates the heap size change based on `-XX:Min/MaxHeapFreeRatio` without taking Eden regions into account. As the Remark pause can happen at any time during the mutator phase, the previous behavior made the heap size changes very dependent on current Eden occupancy (i.e. how far into the mutator phase the application has been when the Remark pause occurs, the amount of free regions used for the calculation can differ a lot, resizing the heap differently).
 
