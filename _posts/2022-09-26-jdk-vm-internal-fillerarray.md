@@ -6,6 +6,7 @@ tags: [GC, JDK 19]
 ---
 
 While writing the [JDK 19 update blog post](/2022/09/16/jdk19-g1-parallel-gc-changes.html) I strongly considered writing about the "new" (`jdk.vm.internal.FillerObject` and `jdk.vm.internal.FillerArray`) objects that may appear in heap dumps. I thought they were not that interesting, but it looks like people quickly [noticed them](https://old.reddit.com/r/java/comments/xlnw9q/the_mysterious_ljavainternalvmfillerarray/). This post describes their purpose after all.
+**Update 2024/07/22:** The name of the latter class is `[Ljdk/internal/vm/FillerElement;` beginning with JDK 21.
 
 ## Background
 
@@ -48,6 +49,8 @@ A large part of the `[I` instances are likely filler objects.
 ## The Change
 
 [JDK-8284435](https://bugs.openjdk.org/browse/JDK-8284435) added special, explicit filler objects with the names `jdk.vm.internal.FillerObject` and `Ljdk.vm.internal.FillerArray;` in Java heap histograms (Actually, in the original change there has been a typo in the filler array type name, it has errorneously been called `Ljava.vm.internal.FillerArray;`, fixed in [JDK-8294000](https://bugs.openjdk.org/browse/JDK-8294000)).
+
+**Update 2024/07/22:** There has been another renaming of the "array" filler to `[Ljdk/internal/vm/FillerElement;` to conform to Java's array class name notation as of [JDK-8319548](https://bugs.openjdk.org/browse/JDK-8319548) and backported to JDK 21.
 
 These classes are created up front at VM startup similar to most VM internal classes.
 
