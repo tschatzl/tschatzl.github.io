@@ -43,7 +43,7 @@ First, Figure 2 shows that in addition to the actual card mark mentioned above, 
 
 There is an artificial delay based on available time in the pause for scanning cards and the rate the application generates new marked cards between card mark and refinement. This delay helps decreasing the overhead of an application repeatedly marking the same cards, avoiding that the same cards will be repeatedly enqueued for refinement (as they are already marked). The delay also increases the probability that the references in the card itself are not interesting any more.
 
-In the next step, shown in Figure 3, refinement threads will pick up previously enqueued cards for re-examination. In this case, the card at location `0xdef` will be refined. The figure also shows the **remembered sets** in light blue: for every area to evacuate, G1 stores the set of interesting card locations for this area. In this figure every area has such a remembered set attached to it, but there may not be one currently for some. Areas may also be discontiguous in the heap. The refinement thread also unmarks the card before looking at the corresponding contents of the Java heap.
+In the next step, shown in Figure 3, refinement threads will pick up previously enqueued cards for re-examination. In this case, the card at location `0xdef` will be refined. The figure also shows the **remembered sets** in light blue: for every area to evacuate, G1 stores the set of interesting card locations for this area. In this figure every area has such a remembered set attached to it, but there may not be one currently for some. Areas may also be discontiguous in the heap ([JDK-8343782](https://bugs.openjdk.org/browse/JDK-8343782) and [JDK-8336086](https://bugs.openjdk.org/browse/JDK-8336086)). The refinement thread also unmarks the card before looking at the corresponding contents of the Java heap.
 
 ![Card Refinement](/assets/20250214-re-examining-card.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
@@ -51,7 +51,7 @@ Figure 4 finally shows the step where the refinement threads put the examined ca
 
 ![Clearing and Classification](/assets/20250214-clearing-and-classifying-card.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
-The end result of this fairly complicated process is that compared to the other throughput collectors in the Hotspot VM in the garbage collection pause G1 only needs to scan cards from two sources:
+The end result of this fairly complicated process is that, compared to the other throughput collectors in the Hotspot VM, in the garbage collection pause G1 only needs to scan cards from two sources:
 * cards just recently marked dirty by the application and not yet refined.
 * cards from the remembered sets of areas that are about to be collected from the remembered sets.
 
@@ -79,7 +79,7 @@ Additionally, concurrent refining of cards can be expensive, particularly if the
 
 The G1 write barrier will not mark a card if
 * the reference assignment write a reference that is not interesting, not crossing areas.
-* the code assigns a `null` value: these do not generate links between objects, so corresponding marked card are unnecessary.
+* the code assigns a `null` value: these do not generate links between objects, so the corresponding marked cards are unnecessary.
 * the card is already marked, which means that it is already scheduled for refinement.
 
 Figure 6 compares the sizes of the resulting, directly inlined part of the G1 write barrier (there is an additional part not shown here which is executed somewhat rarely) on the left with the whole Serial and Parallel GC write barrier on the right ([[Protopopovs23](https://ssw.jku.at/Teaching/MasterTheses/Protopopovs/Thesis.pdf)]).
@@ -94,13 +94,13 @@ G1 uses a large write barrier with many mechanisms to minimize performance impac
 
 All the effort to reduce memory synchronization is wasted if the application's memory access pattern does not fit them and actually performs lots of fairly random reference assignments across the whole heap which to a large part result in enqueuing of card locations for later refinement like BigRAMTester [[JDK-8152438](https://bugs.openjdk.org/browse/JDK-8152438)].
 
-The other poor fit for this write barrier are applications that execute the write barrier in tight loops and at the same time extremely rarely generate a card mark with interesting references so that no concurrent refinement is necessary or actually ever performed (e.g. [JDK-8253230](https://bugs.openjdk.org/browse/JDK-8253230)). These are hampered by the large code footprint of the barrier, inhibiting compiler optimizations.
+The other poor fit for this write barrier are applications that execute the write barrier in tight loops and at the same time extremely rarely generate a card mark with interesting references so that no concurrent refinement is necessary or actually ever performed (e.g. [JDK-8253230](https://bugs.openjdk.org/browse/JDK-8253230)). These are hampered by the large code footprint of the barrier, inhibiting compiler optimizations, or just execute slowly due to unnecessary use of CPU resources.
 
 ## A New Approach
 
 Previous sections showed that a large part of the G1 write barrier is required by the per-card mark memory synchronization to guarantee correctness in case of concurrent writes to the card table and storing the card locations for subsequent refinement.
 
-To remove the memory synchronization, similar to ZGC's double-buffered remembered sets [[JEP439](https://openjdk.org/jeps/439)], this new approach uses two card tables. Each set of threads, the application threads and the refinement threads, gets assigned their own card table, each initially completely empty. Each set of threads only ever writes different values to their card table (just "card table" and "**refinement table***"), obviating the need for fine-grained memory synchronization during actual card mark.
+To remove the memory synchronization, similar to ZGC's double-buffered remembered sets [[JEP439](https://openjdk.org/jeps/439)], this new approach uses two card tables. Each set of threads, the application threads and the refinement threads, gets assigned their own card table, each initially completely empty. Each set of threads only ever writes different values to their card table (just "**card table**" and "**refinement table***"), obviating the need for fine-grained memory synchronization during actual card mark.
 
 Similar to before there is a heuristic that tracks card mark rate on the application card table, and if heuristics predict that there are too many card marks on that card table to meet pause time goal, swap the card tables atomically to the application. The application continues to mark its card table (previously the refinement table), while garbage collection refinement threads work to re-examine all marks from the previous application card table.
 
@@ -112,7 +112,7 @@ This removes the need for the write barrier code to store the card locations in 
 
 ### New Card Marking in G1
 
-Figure 7 shows this new arrangement of data structures: there are now two card tables, the write barrier as before marks the card on its (application) card table.
+Figure 7 shows this new arrangement of data structures: there are now two card tables, the write barrier as before marks the card on the (application) card table.
 
 ![Card Marking (New)](/assets/20250217-new-write-barrier-assignment.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
