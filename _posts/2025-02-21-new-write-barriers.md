@@ -35,7 +35,7 @@ G1 tries to reduce this amount of card scanning in the garbage collection pause 
 * references are often written over and over again between garbage collections. A card mark caused by a reference write may, by the time the next garbage collection occurs, not contain any interesting reference any more.
 * by classifying card marks according to where they originate from, it is possible to only scan marked cards that are relevant for this particular garbage collection during the garbage collection.
 
-Figure 2, 3 and 4 give details about this re-examination (**refinement*) process.
+Figure 2, 3 and 4 give details about this re-examination (refinement) process.
 
 ![Store Cards in Buffer](/assets/20250214-storing-card-in-buffer.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
@@ -238,9 +238,7 @@ The optimization to color these remembered set entries specially keeps duplicate
 
 In some applications these memory reductions completely offset the additional card table memory usage, but this is fairly rare. Particularly applications that did not have large remembered sets for the young generation, which are mostly very throughput-oriented applications, show the above mentioned additional memory usage.
 
-The refinement table is only required if the applications needs to do any refinement. So the refinement table could be allocated lazily, i.e. only if there is some refinement. There is a large overlap between such applications and above very throughput-oriented applications.
-
-This is not implemented in the current version.
+The refinement table is only required if the applications needs to do any refinement. So the refinement table could be allocated lazily, i.e. only if there is some refinement. There is a large overlap between such applications and above very throughput-oriented applications. This is not implemented in the current version.
 
 ### Latency, Pause Times
 
