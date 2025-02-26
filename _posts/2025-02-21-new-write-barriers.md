@@ -124,7 +124,7 @@ Refinement threads start re-examining cards from the refinement card table (prev
 
 ### New Write Barrier in G1
 
-At minimum, the new G1 write barrier requires the card mark, similar to Parallel GC. The difference is that unlike in the Parallel GC write barrier, the card table base address is not constant as it might change for G1 after every card table switch. So Parallel GC can inline the card table address into the code stream, G1 needs to reload it every time from thread local storage.
+At minimum, the new G1 write barrier requires the card mark, similar to Parallel GC. The difference is that unlike in the Parallel GC write barrier, the card table base address is not constant as it changes every card table switch. So Parallel GC can inline the card table address into the code stream, G1 needs to reload it every time from thread local storage.
 
 The final current post write barrier for G1 reduces to the filters and the actual card mark. For a given assignment `x.a = y`, the VM now adds the following pseudo-code after the assignment:
 
@@ -137,11 +137,11 @@ The final current post write barrier for G1 reduces to the filters and the actua
 (6) done:
 ```
 
-Line (1) to (3) implement the filters. They are almost the same as before, with a slightly different condition for the check due to a memory optimization.
+Line (1) to (3) implement the filters. They are almost the same as before, with a slightly different condition for the last filter due to an optimization.
 
 Without the filters, there were some regressions compared to the original write barrier with the filters; the filters also decrease the number of cards that have not been scanned during the garbage collection pause, and the number of cards to be re-examined, so they were kept for now.
 
-Line (5) actually marks the card with a "Dirty" color value.
+Finall, line (5) actually marks the card with a "Dirty" color value.
  
 The original card marking paper uses two different values for card table entries, i.e. colors: "Marked" and "Unmarked", or typically named "Dirty" and "Clean" in the Hotspot VM. In total G1 uses five colors which store some additional information about the corresponding heap area:
 
@@ -150,9 +150,9 @@ The original card marking paper uses two different values for card table entries
 * **already-scanned** - used during garbage collection to indicate that this card has already been scanned.
 * **to-collection-set** - the card may contain an interesting reference to the areas of the heap that are going to be collected in the next garbage collection (the **collection set**, hence the name). This collection set always contains the young generation.
 
-    Refinement can skip scanning these cards because they will always be scanned during garbage collection as G1 always collects the young generation. Adding these cards to remembered sets, even if they contained references to regions not in the collection set, is not needed, they would actually represent duplicate information.
+    Refinement can skip scanning these cards because they will always be scanned during garbage collection as G1 always collects the young generation. Adding these cards to remembered sets, even if they contained references to regions not in the collection set, is not needed either, they would actually represent duplicate information.
 
-    Effectively this also stores the entire remembered set for the next collection set on the card table, avoiding extra memory usage.
+    Effectively, the set of to-collection-set cards also store the entire remembered set for the next collection set on the card table, avoiding extra memory.
 
     For simplicity of the write barrier, it only colors cards as "Dirty": the additional overhead finding out whether a reference refers to an object in the collection set is too expensive here.
 * **from-remset** - used during garbage collection to indicate that the origin of this card is a remembered set and not a recently marked card. This helps distinguishing cards from remembered sets from cards from not yet examined cards to more accurately model the application's card marking rate used in heuristics.
@@ -171,48 +171,48 @@ This refinement round consists of
 
     This ensures correct memory visibility: After this step, the entire VM uses the previous refinement table to mark new cards.
 
-1. **Snapshot the heap** to gather internal data about the refinement work. For every region of the heap the snapshot stores current progress. This allows resuming the refinement at any time.
+1. **Snapshot the heap** to gather internal data about the refinement work. For every region of the heap the snapshot stores current scan progress. This allows resuming the refinement at any time and facilitates parallel work.
 
-1. **Re-examine (sweep) the refinement table** containing the marked cards. Refinement worker threads walk the card table linearly (hence sweeping), claiming parts of it to look for marked cards.
+1. **Re-examine (sweep) the refinement table** containing the marked cards. Refinement worker threads walk the card table linearly (hence sweeping), claiming parts of it to look for marked cards using the heap snapshot.
 
     As Figure 9 shows, the refinement threads re-examine marked cards, with the following potential results:
 
     ![Refinement Threads Re-Examining Cards](/assets/20250217-refinement-reexamine-without-sync.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
     * Cards with references to the collection set are not added to any remembered set. The refinement thread marks these cards as to-collection-set in the application card table and skips any further refinement.
-    * If the card is already marked as to-collection-set, the refinement thread will re-mark this card on the application card table and not examine the corresponding heap contents.
+    * If the card is already marked as to-collection-set, the refinement thread will re-mark this card on the card table as such and not examine the corresponding heap contents at all.
     * Dirty cards which corresponding Java heap can not be parsed right now will be forwarded to the application card table as dirty.
     * Interesting references in heap areas corresponding to dirty cards cause that card to be added to the remembered sets.
-    * During card examination, the card is always set to clean on the refinement card table. Parts of the refinement card table corresponding to the collection set are simply cleaned without re-examination as this is not necessary. During evacuation of these regions, the references of live objects will be found implicitly.
+    * During card examination, the card is always set to clean on the refinement card table. Parts of the refinement card table corresponding to the collection set are simply cleaned without re-examination as these cards are not necessary to keep. During evacuation of these regions, the references of live objects in this area will be found implicitly by the evacuation.
 
-    Writing directly to the application card table by the refinement threads is safe: apart from benign memory races with the application, the result will be at worst another dirty card mark without the additional information.
+    Writing directly to the application card table by the refinement threads is safe: memory races with the application are benign, the result will be at worst another dirty card mark without the additional to-collection-set color information.
 1. **Calculate statistics** about the recent refinement and update predictors.
 
-Any of these steps may be interrupted by a safepoint, which may be a garbage collection pause that evacuates memory.
+Any of these steps may be interrupted by a safepoint, which may be a garbage collection pause that evacuates memory. If not, the refinement worker threads will continue their refinement work using the heap snapshot where they left off.
 
 ### Garbage Collection and Refinement
 
-Refinement heuristics try to avoid having garbage collection interrupt refinement. In this case, the refinement table is all unmarked at the start of the garbage collection, and all the not-yet examined marked cards are on the main card table where the following card table scan phase expects them. No further action except putting the remembered sets of areas to be collected on the main card table must be taken to be able to search for marked cards efficiently on the card table.
+Refinement heuristics try to avoid having garbage collection interrupt refinement. In this case, the refinement table is completely unmarked at the start of the garbage collection, and all the not-yet examined marked cards are on the application card table, just where the following card table scan phase expects them. No further action except putting the remembered sets of areas to be collected on the application card table must be taken to be able to search for marked cards on the card table efficiently.
 
 Previously G1 had information about the location of all marked cards, they were either in the remembered sets, or in the refinement buffers to refine cards. Based on this, G1 could create a more detailed map of where marked cards were located, and only search those areas for marked cards instead of searching the whole card table. However, searching for marked cards is linear access to a relatively little area of memory, so very fast.
 
 The absence of more precise location information for marked cards is also offset by not needing to calculate this information.
 
-In the common case of garbage collections with only young generation areas to evacuate, there is nothing to do as the young generation area's remembered set are effectively tracked on the card table.
+In the common case of garbage collections with only young generation areas to evacuate, there is nothing to do in this step as the young generation area's remembered set is effectively tracked on the card table.
 
 If a young garbage collection pause occurs at any point during the refinement process, the garbage collection needs to perform some compensating work for the not yet swept parts of the refinement table.
 
-In this case the G1 garbage collector there is a new `Merge Refinement Table` phase that performs a subset of the refinement process:
+In this case the G1 garbage collector will start a new `Merge Refinement Table` phase that performs a subset of the refinement process:
 
 ![Merge Refinement Table](/assets/20250221-merge-refinement-table.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
 1. (Optionally) **Snapshot the heap** as above, if the refinement had been interrupted in phase 1 of the process.
-1. **Merge the refinement table** into the card table. This step combines card marks from both card tables into the main card table. This is a logical or of both cards. All marks on the refinement table are removed.
+1. **Merge the refinement table** into the card table. This step combines card marks from both card tables into the application card table. This is a logical or of both card tables. All marks on the refinement table are removed.
 1. **Calculate statistics** as above.
 
-The reason why the refinement table needs to be completely unmarked at the start of the garbage collection is that G1 uses it to  collect card marks containing interesting references for objects evacuated during the garbage collection in the heap areas the objects are evacuated to. This is similar to previously used extra refinement buffers to store those.
+The reason why the refinement table needs to be completely unmarked at the start of the garbage collection is that G1 uses it to collect card marks containing interesting references for objects evacuated during the garbage collection in the heap areas the objects are evacuated to. This is similar to previously used extra refinement buffers to store those.
 
-At the end of the young garbage collection, the two card tables are swapped so that all newly generated cards are on the main card table, and the refinement table is all unmarked.
+At the end of the young garbage collection, the two card tables are swapped so that all newly generated cards are on the application card table, and the refinement table is completely unmarked.
 
 A full collection clears both card tables as this type of garbage collection does not need this information.
 
