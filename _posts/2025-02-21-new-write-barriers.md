@@ -183,7 +183,7 @@ This refinement round consists of
     * If the card is already marked as to-collection-set, the refinement thread will re-mark this card on the card table as such and not examine the corresponding heap contents at all.
     * Dirty cards which corresponding Java heap can not be parsed right now will be forwarded to the application card table as dirty.
     * Interesting references in heap areas corresponding to dirty cards cause that card to be added to the remembered sets.
-    * During card examination, the card is always set to clean on the refinement card table. Parts of the refinement card table corresponding to the collection set are simply cleaned without re-examination as these cards are not necessary to keep. During evacuation of these regions, the references of live objects in this area will be found implicitly by the evacuation.
+    * During card examination, the card is always set to clean on the refinement table. Parts of the refinement table corresponding to the collection set are simply cleaned without re-examination as these cards are not necessary to keep. During evacuation of these regions, the references of live objects in this area will be found implicitly by the evacuation.
 
     Writing directly to the application card table by the refinement threads is safe: memory races with the application are benign, the result will be at worst another dirty card mark without the additional to-collection-set color information.
 1. **Calculate statistics** about the recent refinement and update predictors.
