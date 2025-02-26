@@ -13,8 +13,8 @@ Another sources with more information are the corresponding [draft JEP](https://
 
 G1 is an incremental garbage collector. During garbage collection, a large part of time can be spent on trying to find references to live objects in the areas of the application heap (just *heap* in the following) to evacuate them. The most simple and probably slowest way would be to look through (scan) the entire heap that is not going to be evacuated for such references. The stop-the-world Hotspot collectors, Serial, Parallel and G1 in principle employ a fairly old technique called Card Marking [[Hölzle93](https://bibliography.selflanguage.org/_static/write-barrier.pdf)] to limit the area to scan for references during the garbage collection pause.
 
-In its attempt to better keep pause times, G1 extended this card marking mechanism:
-* concurrent to the application G1 re-examines (**refines**) the cards marked by the application and classifies them. This classification helps in the garbage collection pause to only need to scan cards important for that particular garbage collection.
+In an attempt to better keep pause time goals, G1 extended this card marking mechanism:
+* concurrent to the application, G1 re-examines (**refines**) the cards marked by the application and classifies them. This classification helps in the garbage collection pause to only need to scan cards important for that particular garbage collection.
 * extra code compiled into the application (**write barriers**) removes unnecessary card marks, reducing the amount of cards to scan further.
 
 This comes at additional cost as the next few sections will show.
@@ -29,10 +29,10 @@ When the application modifies an object reference, additional code compiled into
 
 Figure 1 above shows an example execution of a hypothetical assignment of the field `a` in an object `x` of type `X` with a value of `y`. After writing the value into the field, the write barrier code (to be exact, *post write barrier* code, i.e. code added after setting the value) marks the card.
 
-This is where the Serial and Parallel garbage collectors stop at: they let the application accumulate card marks until garbage collection occurs. At that time all of the heap corresponding to the marked cards is scanned for references into the evacuated area. In most applications this is okay effort: the amount of unique cards that need to be scanned during garbage collection is very limited. In other applications scanning the heap corresponding to cards (**scanning the cards**) can take a very significant amount of total garbage collection time.
+This is where the Serial and Parallel garbage collectors stop at: they let the application accumulate card marks until garbage collection occurs. At that time all of the heap corresponding to the marked cards is scanned for references into the evacuated area. In most applications this is okay effort: the number of unique cards that need to be scanned during garbage collection is very limited. In other applications, scanning the heap corresponding to cards (**scanning the cards**) can take a very significant amount of total garbage collection time.
 
 G1 tries to reduce this amount of card scanning in the garbage collection pause by several means. The first is using extra garbage collection threads running concurrent to the application clearing, re-examining and classifying card marks because:
-* references are often written over and over again between garbage collections. A card mark caused by a reference write may, by the time the next garbage collection occurs, not contain any interesting reference any more.
+* references are often written over and over again between garbage collections. A card mark caused by a reference write may, by the time the next garbage collection occurs, not contain any interesting reference anymore.
 * by classifying card marks according to where they originate from, it is possible to only scan marked cards that are relevant for this particular garbage collection during the garbage collection.
 
 Figure 2, 3 and 4 give details about this re-examination (refinement) process.
@@ -41,13 +41,13 @@ Figure 2, 3 and 4 give details about this re-examination (refinement) process.
 
 First, Figure 2 shows that in addition to the actual card mark mentioned above, the write barrier stores (**enqueues**) the card location (in this case `0xabc`) in an internal buffer (**refinement buffer**) shown in green so that the re-examination garbage collector threads (**refinement threads**) can later easily find them again.
 
-There is an artificial delay based on available time in the pause for scanning cards and the rate the application generates new marked cards between card mark and refinement. This delay helps decreasing the overhead of an application repeatedly marking the same cards, avoiding that the same cards will be repeatedly enqueued for refinement (as they are already marked). The delay also increases the probability that the references in the card itself are not interesting any more.
+There is an artificial delay based on available time in the pause for scanning cards and the rate the application generates new marked cards between card mark and refinement. This delay helps decreasing the overhead of an application repeatedly marking the same cards, avoiding that the same cards will be repeatedly enqueued for refinement (as they are already marked). The delay also increases the probability that the references in the card itself are not interesting anymore.
 
 In the next step, shown in Figure 3, refinement threads will pick up previously enqueued cards for re-examination. In this case, the card at location `0xdef` will be refined. The figure also shows the **remembered sets** in light blue: for every area to evacuate, G1 stores the set of interesting card locations for this area. In this figure every area has such a remembered set attached to it, but there may not be one currently for some. Areas may also be discontiguous in the heap ([JDK-8343782](https://bugs.openjdk.org/browse/JDK-8343782) and [JDK-8336086](https://bugs.openjdk.org/browse/JDK-8336086)). The refinement thread also unmarks the card before looking at the corresponding contents of the Java heap.
 
 ![Card Refinement](/assets/20250214-re-examining-card.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
-Figure 4 finally shows the step where the refinement threads put the examined card (`0xdef`) into the remembered sets of the areas for which that card contains an interesting reference at this point in time. Since the heap covered by a card may contain multiple interesting references, multiple remembered sets may receive that particular card location.
+Finally, Figure 4 shows the step where the refinement threads put the examined card (`0xdef`) into the remembered sets of the areas for which that card contains an interesting reference at this point in time. Since the heap covered by a card may contain multiple interesting references, multiple remembered sets may receive that particular card location.
 
 ![Clearing and Classification](/assets/20250214-clearing-and-classifying-card.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
@@ -75,14 +75,14 @@ This sounds straightforward, but unfortunately there is some complication that F
 
 ![Concurrency Issues](/assets/20250217-concurrency-problem.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
-Additionally, concurrent refining of cards can be expensive, particularly if there are no extra processing resources available. So the G1 barrier contains extra filtering code to avoid card marks that are generated by reference writes that make no difference for garbage collection.
+Additionally, concurrent refining of cards can be expensive, particularly if there are no extra processing resources available. So, the G1 barrier contains extra filtering code to avoid card marks that are generated by reference writes that make no difference for garbage collection.
 
 The G1 write barrier will not mark a card if
-* the reference assignment write a reference that is not interesting, not crossing areas.
+* the reference assignment writes a reference that is not interesting, not crossing areas.
 * the code assigns a `null` value: these do not generate links between objects, so the corresponding marked cards are unnecessary.
 * the card is already marked, which means that it is already scheduled for refinement.
 
-Figure 6 compares the sizes of the resulting, directly inlined part of the G1 write barrier (there is an additional part not shown here which is executed somewhat rarely) on the left with the whole Serial and Parallel GC write barrier on the right ([[Protopopovs23](https://ssw.jku.at/Teaching/MasterTheses/Protopopovs/Thesis.pdf)]).
+Figure 6 compares the sizes of the resulting write barriers, directly inlined part of the G1 write barrier (there is an additional part not shown here which is executed somewhat rarely) on the left with the whole Serial and Parallel GC write barrier on the right ([[Protopopovs23](https://ssw.jku.at/Teaching/MasterTheses/Protopopovs/Thesis.pdf)]).
 
 ![Write Barrier Comparison](/assets/20250217-post-write-barrier-fast-path.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
@@ -139,7 +139,7 @@ The final current post write barrier for G1 reduces to the filters and the actua
 
 Line (1) to (3) implement the filters. They are almost the same as before, with a slightly different condition for the check due to a memory optimization.
 
-Without the filters, there were some regressions compared to the original write barrier with the filters; the filters also decrease the number of cards that have not been scanned during the garbage collection pause, and the amount of cards to be re-examined, so they were kept for now.
+Without the filters, there were some regressions compared to the original write barrier with the filters; the filters also decrease the number of cards that have not been scanned during the garbage collection pause, and the number of cards to be re-examined, so they were kept for now.
 
 Line (5) actually marks the card with a "Dirty" color value.
  
@@ -148,7 +148,7 @@ The original card marking paper uses two different values for card table entries
 * **clean** - the card does not contain an interesting reference.
 * **dirty** - the card may contain an interesting reference.
 * **already-scanned** - used during garbabge collection to indicate that this card has already been scanned.
-* **to-collection-set** - the card may contain an interesting reference to the heap areas that are going to be collected in the next garbage collection (the **collection set**, hence the name). This collection set always contains the young generation.
+* **to-collection-set** - the card may contain an interesting reference to the areas of the heap that are going to be collected in the next garbage collection (the **collection set**, hence the name). This collection set always contains the young generation.
 
     Refinement can skip scanning these cards because it will always be scanned during garbage collection because G1 always collects the young generation. Adding this card to the remembered sets is not needed, it would actually be duplicate information.
 
@@ -161,7 +161,7 @@ The last two card colors are new. The use of the to-collection-set color explain
 
 The goal of the card table switching process is to make sure that all threads in the system agree on that the refinement table is now the application card table and the other way around to avoid the problematic situation described earlier in Figure 5.
 
-The process is initiated by a special background thread, the refinement control thread. It regularly estimates whether the currently estimated amount of cards at the start of the next garbage collection would exceed the allowed number of not re-examined cards given card examination rate. If a refinement round is necessary, it also calculates the number of refinement worker threads, which do the actual work, needed to complete before the garbage collection.
+The process is initiated by a special background thread, the refinement control thread. It regularly estimates whether the currently estimated number of cards at the start of the next garbage collection would exceed the allowed number of not re-examined cards given card examination rate. If a refinement round is necessary, it also calculates the number of refinement worker threads, which do the actual work, needed to complete before the garbage collection.
 
 This refinement round consists of
 
@@ -192,7 +192,7 @@ Any of these steps may be interrupted by a safepoint, which may be a garbage col
 
 Refinement heuristics try to avoid having garbage collection interrupt refinement. In this case, the refinement table is all unmarked at the start of the garbage collection, and all the not-yet examined marked cards are on the main card table where the following card table scan phase expects them. No further action except putting the remembered sets of areas to be collected on the main card table must be taken to be able to search for marked cards efficiently on the card table.
 
-Previously G1 had information about the location of all marked cards, they were either in the remembered sets, or in the refinement buffers to refine cards. Based on this, G1 could create a more detailed map of where marked cards were located, and only search those areas for marked cards instead of searching the whole card table. However searching for marked cards is linear access to a relatively little area of memory, so very fast.
+Previously G1 had information about the location of all marked cards, they were either in the remembered sets, or in the refinement buffers to refine cards. Based on this, G1 could create a more detailed map of where marked cards were located, and only search those areas for marked cards instead of searching the whole card table. However, searching for marked cards is linear access to a relatively little area of memory, so very fast.
 
 The absence of more precise location information for marked cards is also offset by not needing to calculate this information.
 
@@ -205,7 +205,7 @@ In this case the G1 garbage collector there is a new `Merge Refinement Table` ph
 ![Merge Refinement Table](/assets/20250221-merge-refinement-table.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
 1. (Optionally) **Snapshot the heap** as above, if the refinement had been interrupted in phase 1 of the process.
-1. **Merge the refinement table** into the card table. This steps combines card marks from both card tables into the main card table. This is a logical or of both cards. All marks on the refinement table are removed.
+1. **Merge the refinement table** into the card table. This step combines card marks from both card tables into the main card table. This is a logical or of both cards. All marks on the refinement table are removed.
 1. **Calculate statistics** as above.
 
 The reason why the refinement table needs to be completely unmarked at the start of the garbage collection is that G1 uses it to  collect card marks containing interesting references for objects evacuated during the garbage collection in the heap areas the objects are evacuated to. This is similar to previously used extra refinement buffers to store those.
@@ -238,7 +238,7 @@ The optimization to color these remembered set entries specially keeps duplicate
 
 In some applications these memory reductions completely offset the additional card table memory usage, but this is fairly rare. Particularly applications that did not have large remembered sets for the young generation, which are mostly very throughput-oriented applications, show the above mentioned additional memory usage.
 
-The refinement table is only required if the applications needs to do any refinement. So the refinement table could be allocated lazily, i.e. only if there is some refinement. There is a large overlap between such applications and above very throughput-oriented applications. This is not implemented in the current version.
+The refinement table is only required if the application needs to do any refinement. So, the refinement table could be allocated lazily, i.e. only if there is some refinement. There is a large overlap between such applications and above very throughput-oriented applications. This is not implemented in the current version.
 
 ### Latency, Pause Times
 
@@ -252,7 +252,7 @@ The cards created during garbage collection do not need to be redirtied, so that
 
 This change removes the need for a large part of G1's write barrier using a dual card table approach to avoid fine-grained synchronization, increasing throughput significantly for applications.
 
-Overall I'm quite satisfied with the change - after many years thinking about and prototyping solutions to the problem without introducing some "G1 throughput mode" that would have huge implications on maintainability (basically another garbage collector) or making G1 unnecessarily complex this seems a very good solution, taking the advantages of these throughput barriers without too many drawbacks.
+Overall, I'm quite satisfied with the change - after many years thinking about and prototyping solutions to the problem without introducing some "G1 throughput mode" that would have huge implications on maintainability (basically another garbage collector) or making G1 unnecessarily complex this seems a very good solution, taking the advantages of these throughput barriers without too many drawbacks.
 
 A lot of people helped with this change, my thanks.
 
