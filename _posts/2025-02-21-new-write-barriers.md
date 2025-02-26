@@ -5,7 +5,7 @@ date:   2025-02-21 11:00:00 +0200
 tags: [GC, G1, JDK 25, Performance, Barrier, Write Barrier]
 ---
 
-Garbage First's (G1) collector's throughput sometimes trails that of other HotSpot VM collectors by up to 20% (e.g. [JDK-8253230](https://bugs.openjdk.org/browse/JDK-8253230) or [JDK-8132937](https://bugs.openjdk.org/browse/JDK-8132937)). The difference is caused by G1's principle to be a garbage collector that keeps a balance between latency and throughput and meets a pause time goal. A large part can be attributed to the synchronization of garbage collector with the application necessary to allow correct concurrent work. With [JDK-8340827](https://bugs.openjdk.org/browse/JDK-8340827) we substantially redesign how the synchronization works for much less impact on throughput. This post explains these fairly fundamental changes.
+The Garbage First (G1) collector's throughput sometimes trails that of other HotSpot VM collectors - by up to 20% (e.g. [JDK-8253230](https://bugs.openjdk.org/browse/JDK-8253230) or [JDK-8132937](https://bugs.openjdk.org/browse/JDK-8132937)). The difference is caused by G1's principle to be a garbage collector that keeps a balance between latency and throughput and meets a pause time goal. A large part can be attributed to the synchronization of garbage collector with the application necessary to allow correct concurrent work. With [JDK-8340827](https://bugs.openjdk.org/browse/JDK-8340827) we substantially redesign how the synchronization works for much less impact on throughput. This post explains these fairly fundamental changes.
 
 Another sources with more information are the corresponding [draft JEP](https://bugs.openjdk.org/browse/JDK-8340827) and the [implementation PR](https://bugs.openjdk.org/browse/JDK-8340827).
 
