@@ -116,11 +116,11 @@ Figure 7 shows this new arrangement of data structures: there are now two card t
 
 ![Card Marking (New)](/assets/20250217-new-write-barrier-assignment.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
-When the card table accrued enough marks, G1 switches card tables atomically. Figure 8 shows an example where the application card table and the refinement table were just switched, and the application already continued marking cards on the former refinement card table.
+When the card table accrued enough marks, G1 switches card tables atomically. Figure 8 shows an example where the application card table and the refinement table were just switched, and the application already continued marking cards on the former refinement table.
 
 ![Switching Card Tables](/assets/20250217-switching-card-tables.png){:style="display:block; margin-left:auto; margin-right:auto"}
 
-Refinement threads start re-examining cards from the refinement card table (previously application card table) as before as indicated. Card marks are cleared until all marked cards have been processed. Since the application threads continue to mark cards on their card table, no synchronization between application threads and refinement threads is required.
+Refinement threads start re-examining cards from the refinement table (previously application card table) as before as indicated. Card marks are cleared until all marked cards have been processed. Since the application threads continue to mark cards on their card table, no synchronization between application threads and refinement threads is required.
 
 ### New Write Barrier in G1
 
