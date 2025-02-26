@@ -147,12 +147,14 @@ The original card marking paper uses two different values for card table entries
 
 * **clean** - the card does not contain an interesting reference.
 * **dirty** - the card may contain an interesting reference.
-* **already-scanned** - used during garbabge collection to indicate that this card has already been scanned.
+* **already-scanned** - used during garbage collection to indicate that this card has already been scanned.
 * **to-collection-set** - the card may contain an interesting reference to the areas of the heap that are going to be collected in the next garbage collection (the **collection set**, hence the name). This collection set always contains the young generation.
 
-    Refinement can skip scanning these cards because it will always be scanned during garbage collection because G1 always collects the young generation. Adding this card to the remembered sets is not needed, it would actually be duplicate information.
+    Refinement can skip scanning these cards because they will always be scanned during garbage collection as G1 always collects the young generation. Adding these cards to remembered sets, even if they contained references to regions not in the collection set, is not needed, they would actually represent duplicate information.
 
-    For simplicity in the write barrier, it only colors cards as "Dirty": the additional overhead in finding out whether this has been a reference to an object in the collection set is too expensive here.
+    Effectively this also stores the entire remembered set for the next collection set on the card table, avoiding extra memory usage.
+
+    For simplicity of the write barrier, it only colors cards as "Dirty": the additional overhead finding out whether a reference refers to an object in the collection set is too expensive here.
 * **from-remset** - used during garbage collection to indicate that the origin of this card is a remembered set and not a recently marked card. This helps distinguishing cards from remembered sets from cards from not yet examined cards to more accurately model the application's card marking rate used in heuristics.
 
 The last two card colors are new. The use of the to-collection-set color explains the condition used in line (3) of the write barrier above: it avoids overwriting this value excluding benign races.
