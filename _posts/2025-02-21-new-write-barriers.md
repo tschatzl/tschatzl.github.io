@@ -250,6 +250,10 @@ Even if the refinement table needs to be merged into the card table it is extrem
 
 The cards created during garbage collection do not need to be redirtied, so another garbage collection phase that was removed.
 
+### Code Size
+
+During review a colleague mentioned that the change reduces total code size by around 5%.
+
 ## Summary
 
 This change removes the need for a large part of G1's write barrier using a dual card table approach to avoid fine-grained synchronization, increasing throughput significantly for some applications.
