@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Quest for Throughput - New Write Barriers for G1"
+title:  "New Write Barriers for G1"
 date:   2025-02-21 11:00:00 +0200
 tags: [GC, G1, JDK 25, Performance, Barrier, Write Barrier]
 ---
