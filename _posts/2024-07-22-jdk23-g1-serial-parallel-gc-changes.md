@@ -40,6 +40,8 @@ With [JDK-8319548](https://bugs.openjdk.org/browse/JDK-8319548) the class name o
 
 ## What's next
 
+{: #single-remsets-multiple-regions }
+
 Reduction of G1 remembered set storage requirements is still a very important topic to us: one [old idea](https://bugs.openjdk.org/browse/JDK-8058803) is to use a single rememebered set for multiple regions, removing the need to store remembered set entries within the group of regions with the same remembered set.
 
 The figures below show the principle: Currently regions (the big rounded boxes at the top, with "Y" for "Young region" and "O" for "Old region") may have remembered sets associated to them (the vertical small boxes below the regions). The entries refer to approximate locations (areas) outside of the respective region, where there may be a reference into that region.
