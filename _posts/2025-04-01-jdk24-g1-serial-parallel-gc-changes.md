@@ -7,7 +7,7 @@ tags: [GC, G1, Parallel, Serial, JDK 24, Performance]
 
 JDK 24 has been [released](https://openjdk.java.net/projects/jdk/24/) a few weeks ago. This post is going to provide the usual brief look on changes to the stop-the-world collectors in OpenJDK in that release. Originally I thought there was not much to talk about, hence the delay, but in hindsight I have been wrong.
 
-Similar to the [previous release](/2024/07/22/jdk23-g1-parallel-gc-changes.html) JDK 24 is a fairly muted one in the GC area, but there are good things on the horizon particularly for JDK 25 that I will touch on at the end of this post :)
+Similar to the [previous release](/2024/07/22/jdk23-g1-serial-parallel-gc-changes.html) JDK 24 is a fairly muted one in the GC area, but there are good things on the horizon particularly for JDK 25 that I will touch on at the end of this post :)
 
 The full list of changes for the entire Hotspot GC subcomponent for JDK 24 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20status%20%3D%20Resolved%20AND%20fixVersion%20%3D%20%2224%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc%20ORDER%20BY%20summary%20ASC%2C%20status%20DESC), showing around 190 changes in total having been resolved or closed. Nothing particular unusual here.
 
@@ -33,7 +33,7 @@ Besides, there has been a [JavaOne](https://dev.java/community/javaone-2025/) co
 
   * Additionally we have been working on decreasing native memory usage, targeting the [remembered sets](https://docs.oracle.com/en/java/javase/24/gctuning/garbage-first-g1-garbage-collector1.html#GUID-99526C47-2C71-408C-9DBE-4F38ED839FF0) once again. As written in the respective section of the garbage collection tuning guide, G1 [now](https://bugs.openjdk.org/browse/JDK-8336086) manages remembered sets for the young generation as a whole, single unit, removing duplicates and so saving memory. Less remembered set entries for the young generation also decreases garbage collection pauses (very) slightly.
   
-    The JDK 23 [blog post](/2024/07/22/jdk23-g1-parallel-gc-changes.html#single-remsets-multiple-regions) describes the idea with some additional graphs at the end.
+    The JDK 23 [blog post](/2024/07/22/jdk23-g1-serial-parallel-gc-changes.html#single-remsets-multiple-regions) describes the idea with some additional graphs at the end.
 
 ## What's next
 
