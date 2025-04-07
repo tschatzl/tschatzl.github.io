@@ -5,7 +5,7 @@ date:   2025-04-01 11:00:00 +0200
 tags: [GC, G1, Parallel, Serial, JDK 24, Performance]
 ---
 
-JDK 24 has been [released](https://openjdk.java.net/projects/jdk/24/) a few weeks ago. This post is going to provide the usual brief look on changes to the stop-the-world collectors in OpenJDK in that release. Originally I thought there was not much to talk about, hence the delay, but in hindsight I have been wrong.
+JDK 24 has been [released](https://openjdk.java.net/projects/jdk/24/) a few weeks ago. This post provides a brief overview of the changes to the stop-the-world collectors in OpenJDK in that release. Originally I thought there was not much to talk about, hence the delay, but in hindsight I have been wrong.
 
 Similar to the [previous release](/2024/07/22/jdk23-g1-serial-parallel-gc-changes.html) JDK 24 is a fairly muted one in the GC area, but there are good things on the horizon particularly for JDK 25 that I will touch on at the end of this post :)
 
