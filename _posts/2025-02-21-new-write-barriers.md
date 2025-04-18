@@ -53,7 +53,7 @@ Finally, Figure 4 shows the step where the refinement threads put the examined c
 
 The end result of this fairly complicated process is that, compared to the other throughput collectors in the Hotspot VM, in the garbage collection pause G1 only needs to scan cards from two sources:
 * cards just recently marked dirty by the application and not yet refined.
-* cards from the remembered sets of areas that are about to be collected from the remembered sets.
+* cards from the remembered sets of areas that are about to be collected.
 
 G1 will merge these two sources, marking cards from the remembered sets on the card table, before scanning the card table for card marks [[JDK-8213108](https://bugs.openjdk.org/browse/JDK-8213108)].
 
