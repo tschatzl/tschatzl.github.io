@@ -42,7 +42,7 @@ Let's start with the interesting change breakdown for JDK 25:
     
     G1 uses this much more accurate efficiency information during candidate selection in the `Remark` pause.
 
-  * The [write-barrier improvements](https://bugs.openjdk.org/browse/JDK-8340827) explained in [this post](2025/02/21/new-write-barriers.html) originally scheduled for JDK 25 did not make it in time due to process issues. Hopefully it can make it for JDK 26.
+  * The [write-barrier improvements](https://bugs.openjdk.org/browse/JDK-8340827) explained in [this post](/2025/02/21/new-write-barriers.html) originally scheduled for JDK 25 did not make it in time due to process issues. Hopefully it can make it for JDK 26.
 
   * There were some ([here](https://bugs.openjdk.org/browse/JDK-8355756) and [here](https://bugs.openjdk.org/browse/JDK-8355681)) fixes to avoid some superfluous garbage collection pauses in some edge cases. Another [change](https://bugs.openjdk.org/browse/JDK-8271871) improves performance of certain garbage collections.
 
