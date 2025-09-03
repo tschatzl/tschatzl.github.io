@@ -56,6 +56,8 @@ Let's start with the interesting change breakdown for JDK 25:
 
   * There were some ([here](https://bugs.openjdk.org/browse/JDK-8355756) and [here](https://bugs.openjdk.org/browse/JDK-8355681)) fixes to avoid some superfluous garbage collection pauses in some edge cases. Another [change](https://bugs.openjdk.org/browse/JDK-8271871) improves performance of certain garbage collections.
 
+  * **Update 2025-09-03:** There is a [regression where G1 fails to obtain large pages with Transparent Huge Pages (THP)](https://bugs.openjdk.org/browse/JDK-8366564) with G1 we noticed too late for the JDK 25 release. This may cause performance regressions in all applications that use THP with the `madvise` setting.  This will be fixed in one of the next update releases.
+
 ## What's next
 
 * Currently a lot of effort in the G1 area is spent on implementing [Automatic Heap Sizing for G1](https://bugs.openjdk.org/browse/JDK-8359211): an effort where G1 automatically determines a maximum Java heap size that is efficient and does not blow the available memory budget by tracking free memory in the environment, and adjusting heap size accordingly.
