@@ -64,7 +64,7 @@ This release there have been a significant amount of changes affecting all garba
 
 Parallel GC only saw a fair amount of cleanup changes in JDK 26. The most important for end-users is probably the deprecation and obsoletion of several VM options.
 
-Obsoletion of the `-XX:ParallelRefProcEnabled` option is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
+Deprecation of the `-XX:ParallelRefProcEnabled` option is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
 
 G1 garbage collector also used this option, so it is affected the same by this change.
 
