@@ -21,7 +21,7 @@ This release there have been a significant amount of changes affecting all garba
 
     In earlier releases the information was fragmented or required  manual aggregation, and were difficult or impossible to obtain reliably for users.
     
-    Now there are multiple ways of obtaining that information - one way to do so is enabling `gc+cpu=info` logging that prints something like the following at VM exit:
+    Now there are multiple ways of obtaining that information - one way to do so is enabling `cpu=info` logging that prints something like the following at VM exit:
   ```
 [info ][cpu] === CPU time Statistics =========================================
 [info ][cpu]                                                          CPUs
