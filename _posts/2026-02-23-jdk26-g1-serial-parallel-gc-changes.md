@@ -9,7 +9,7 @@ The OpenJDK project is about to release JDK 26 in a few days. This is a good opp
 
 The complete list of resolved/closed changes for the GC subcomponent for JDK 26 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20status%20%3D%20Resolved%20AND%20fixVersion%20%3D%20%2226%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc%20ORDER%20BY%20summary%20ASC%2C%20status%20DESC), containing around 380 changes that were resolved or closed in total.
 
-Close to double the amount of issues were closed in JDK 26 compared to the last release. Some brief analysis indicates that the composition of changes is different: there were many small changes both end-user visible or just code quality improvements rather than a few single, larger changes. Most larger changes were integrated early, meaning most development time was spent in earlier releases. Additionally a few new contributors to the GC component had meaningful impact.
+Close to double the amount of issues were closed in JDK 26 compared to the last release. Some brief analysis indicates that the composition of changes is different: there were many small changes both end-user visible or just code quality improvements rather than a few single, larger changes. Most larger changes were integrated early, meaning most development time was spent in earlier release periods. Additionally a few new contributors to the GC component had meaningful impact.
 
 Let's start with the breakdown of in my opinion changes worth mentioning categorized by stop-the-world garbage collector for JDK 26.
 
@@ -33,7 +33,7 @@ This release there have been a significant amount of changes affecting all garba
 [info ][cpu]        VM Thread                        0.0216    0.00       0.0
 [info ][cpu] =================================================================
   ```
-    The output shows Total Process and Garbage Collection CPU usage in absolute and relative terms ([JDK-8359110](https://bugs.openjdk.java.net/browse/JDK-8359110)). Hsperf counters were added or updated, see [JDK-8315149](https://bugs.openjdk.org/browse/JDK-8315149) for the exact counter names. There is also a programmatic way of obtaining this information in your own application.
+    The output shows Total Process and Garbage Collection CPU usage in absolute and relative terms ([JDK-8359110](https://bugs.openjdk.java.net/browse/JDK-8359110)). Hsperf counters were updated, see [JDK-8315149](https://bugs.openjdk.org/browse/JDK-8315149) for the exact counter names. There is also a programmatic way of obtaining this information in your own application.
 
     This [article](https://norlinder.nu/posts/GC-Cost-CPU-vs-Memory/) from one of my colleagues about analysis of the CPU-memory relationship in garbage collection shows and uses this new information.
   * [JEP 516: Ahead-of-Time Object Caching with Any GC](https://openjdk.org/jeps/516) introduces a new mechanism for loading [ahead-of-time](https://openjdk.org/jeps/483) (AOT) linked and loaded objects, with the explicit goal of working well with all Hotspot garbage collectors. The reason is garbage collection algorithm independent support of Project [Leyden](https://openjdk.org/projects/leyden/).
@@ -56,7 +56,7 @@ This release there have been a significant amount of changes affecting all garba
   
     `-XX:AggressiveHeap`, which collects a set of optimizations mainly for "long-running memory-intensive benchmarking scenarios", has also been deprecated. Multiple reasons including the generic name, its focus on SPECjbb, the complexity of finding a similar set of tunings for nowadays' very diverse landscape of these applications led to its impending removal. The [CSR](https://bugs.openjdk.org/browse/JDK-8370814) lists the options it enables if one wants to recreate its effects manually.
 
-    The set of little known and typically only for internal testing used options that were deprecated for removal in the next releases are `-XX:MaxRAM` [JDK-8369346](https://bugs.openjdk.org/browse/JDK-8369346), `-XX:AlwaysActAsServerClassMachine`, and `-XX:AlwaysActAsServerClassMachine` [JDK-8370844](https://bugs.openjdk.org/browse/JDK-8370844). Their effect can similarly be replaced by other options.
+    The set of little known and typically only for internal testing used options that were deprecated for removal in the next releases are `-XX:MaxRAM` ([JDK-8369346](https://bugs.openjdk.org/browse/JDK-8369346)), `-XX:AlwaysActAsServerClassMachine`, and `-XX:AlwaysActAsServerClassMachine` ([JDK-8370844](https://bugs.openjdk.org/browse/JDK-8370844)). Their effect can similarly be replaced by other options.
 
   * Finally, there is a new JFR event that details string deduplication results ([JDK-8360540](https://bugs.openjdk.org/browse/JDK-8360540), reducing the need to rely on log interpretation.
 
@@ -64,15 +64,15 @@ This release there have been a significant amount of changes affecting all garba
 
 Parallel GC only saw a fair amount of cleanup changes in JDK 26. The most important for end-users is probably the deprecation and obsoletion of several VM options.
 
-Deprecation of the `-XX:ParallelRefProcEnabled` option is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
+Deprecation of the `-XX:ParallelRefProcEnabled` option ([JDK-8359924](https://bugs.openjdk.org/browse/JDK-8359924)) is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
 
 G1 garbage collector also used this option, so it is affected the same by this change.
 
-Next to that, several rather unknown Parallel GC-specific used options were deprecated, obsoleted or removed - `-XX:PSChunkLargeArrays`, `-XX:HeapMaximumCompactionInterval`, and the debug-build only `GCExpandToAllocateDelayMillis`.
+Next to that, several rather unknown Parallel GC-specific used options were deprecated, obsoleted or removed `-XX:PSChunkLargeArrays` ([JDK-8360628](https://bugs.openjdk.org/browse/JDK-8360628)), `-XX:HeapMaximumCompactionInterval` ([JDK-8366882](https://bugs.openjdk.org/browse/JDK-8366882)), and the debug-build only `GCExpandToAllocateDelayMillis` ([JDK-8363229](https://bugs.openjdk.org/browse/JDK-8363229)).
 
 ## Serial GC
 
-There were some significant internal changes (e.g. Eden and Survivor spaces were swapped in address space [JDK-8368740](Jttps://bugs.openjdk.org/browse/DK-8368740)) and refactoring, there were no major user-visible changes in this release.
+There were some significant internal changes (e.g. Eden and Survivor spaces were swapped in address space ([JDK-8368740](Jttps://bugs.openjdk.org/browse/DK-8368740))) and refactoring, there were no major user-visible changes in this release.
 
 ## G1 GC
 
@@ -90,7 +90,7 @@ G1 received the largest number of changes among the stop-the-world collectors in
     
     This aligns with a long overdue reduction of default G1 GC CPU usage goal ([JDK-8247843](https://bugs.openjdk.org/browse/JDK-8247843)). The change reduces its default value from 8% to 4%. The original value dates back to G1's initial release, but over the years G1 got much faster and performs much more consistently across a larger variety of workloads, and can often maintain the same performance on a tighter heap and lower GC CPU usage than before.
 
-  * One of the most often asked for functionality from the Parallel collector is support for `-XX:UseGCOverheadLimit`. When active (which is the default), the VM throws an Out-Of-Memory exception if GC CPU usage stays higher than a threshold (`-XX:GCTimeLimit`, default 98%) and free Java heap space below another threshold (`-XX:GCHeapFreeLimit`, default 2%) for a long time. The intent is to avoid situation where a severely misconfigured VM spends almost all of its time in GC without the application actually being able to progress.
+  * One of the most often asked for functionality from the Parallel collector is support for `-XX:UseGCOverheadLimit` ([JDK-8212084](https://bugs.openjdk.org/browse/JDK-8212084)). When active (which is the default), the VM throws an Out-Of-Memory exception if GC CPU usage stays higher than a threshold (`-XX:GCTimeLimit`, default 98%) and free Java heap space below another threshold (`-XX:GCHeapFreeLimit`, default 2%) for a long time. The intent is to avoid situation where a severely misconfigured VM spends almost all of its time in GC without the application actually being able to progress.
 
     Log messages at `gc+info` level and below give some additional context about how the trigger conditions had been reached.
 
