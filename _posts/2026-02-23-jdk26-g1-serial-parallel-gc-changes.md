@@ -64,11 +64,11 @@ This release there have been a significant amount of changes affecting all garba
 
 Parallel GC only saw a fair amount of cleanup changes in JDK 26. The most important for end-users is probably the deprecation and obsoletion of several VM options.
 
-Deprecation of the `-XX:ParallelRefProcEnabled` option ([JDK-8359924](https://bugs.openjdk.org/browse/JDK-8359924)) is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
+* Deprecation of the `-XX:ParallelRefProcEnabled` option ([JDK-8359924](https://bugs.openjdk.org/browse/JDK-8359924)) is the most likely to affect end users. It controls parallelization of the *java.lang.ref.Reference* processing phase. That option has been enabled by default for a long time without issues, so there was no reason to keep it. Particularly, if one ever needs to reduce the parallelism of this phase, `-XX:ReferencesPerThread` can be used to modify work per thread to achieve the same effect.
 
-G1 garbage collector also used this option, so it is affected the same by this change.
+  G1 garbage collector also used this option, so it is affected the same by this change.
 
-Next to that, several rather unknown Parallel GC-specific used options were deprecated, obsoleted or removed `-XX:PSChunkLargeArrays` ([JDK-8360628](https://bugs.openjdk.org/browse/JDK-8360628)), `-XX:HeapMaximumCompactionInterval` ([JDK-8366882](https://bugs.openjdk.org/browse/JDK-8366882)), and the debug-build only `GCExpandToAllocateDelayMillis` ([JDK-8363229](https://bugs.openjdk.org/browse/JDK-8363229)).
+* Next to that, several rather unknown Parallel GC-specific used options were deprecated, obsoleted or removed `-XX:PSChunkLargeArrays` ([JDK-8360628](https://bugs.openjdk.org/browse/JDK-8360628)), `-XX:HeapMaximumCompactionInterval` ([JDK-8366882](https://bugs.openjdk.org/browse/JDK-8366882)), and the debug-build only `GCExpandToAllocateDelayMillis` ([JDK-8363229](https://bugs.openjdk.org/browse/JDK-8363229)).
 
 ## Serial GC
 
@@ -92,7 +92,7 @@ G1 received the largest number of changes among the stop-the-world collectors in
 
   * One of the most often asked for functionality from the Parallel collector is support for `-XX:UseGCOverheadLimit` ([JDK-8212084](https://bugs.openjdk.org/browse/JDK-8212084)). When active (which is the default), the VM throws an Out-Of-Memory exception if GC CPU usage stays higher than a threshold (`-XX:GCTimeLimit`, default 98%) and free Java heap space below another threshold (`-XX:GCHeapFreeLimit`, default 2%) for a long time. The intent is to avoid situation where a severely misconfigured VM spends almost all of its time in GC without the application actually being able to progress.
 
-    Log messages at `gc+info` level and below give some additional context about how the trigger conditions had been reached.
+    Log messages at `gc=info` level and below give some additional context about how the trigger conditions had been reached.
 
   * As always, there also were a set of general performance improvements: some parallelization efforts (e.g. [JDK-8363932](https://bugs.openjdk.org/browse/JDK-8363932)) and an improvement to the eager reclaim mechanism: the behavior described [here](https://docs.oracle.com/en/java/javase/25/gctuning/garbage-first-g1-garbage-collector1.html#GUID-D74F3CC7-CC9F-45B5-B03D-510AEEAC2DAC) now applies to all types of humongous objects ([JDK-8048180](https://bugs.openjdk.org/browse/JDK-8048180)). The CR contains a performance graph showing how this can reduce unexpectedly frequent or long collections in headroom-constrained scenarios.
   
