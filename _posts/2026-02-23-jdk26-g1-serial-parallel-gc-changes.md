@@ -72,7 +72,7 @@ Parallel GC only saw a fair amount of cleanup changes in JDK 26. The most import
 
 ## Serial GC
 
-There were some significant internal changes (e.g. Eden and Survivor spaces were swapped in address space ([JDK-8368740](https://bugs.openjdk.org/browse/DK-8368740))) and refactoring, there were no major user-visible changes in this release.
+There were some significant internal changes (e.g. Eden and Survivor spaces were swapped in address space ([JDK-8368740](https://bugs.openjdk.org/browse/JDK-8368740))) and refactoring, there were no major user-visible changes in this release.
 
 ## G1 GC
 
