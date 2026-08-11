@@ -45,7 +45,7 @@ Parallel GC had some notable bug fixes that may improve performance:
 
 ## Serial GC
 
-No notable Serial GC specific changes - except for not being the default collector anymore.
+No notable Serial GC specific changes - except for not being the default collector in some cases anymore.
 
 ## All Collectors
 
