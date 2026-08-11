@@ -37,8 +37,6 @@ author:
 
 minima:
   skin: dark
-
-minima:
   social_links:
     github: tschatzl
 
@@ -48,6 +46,13 @@ plugins:
 
 show_excerpts: true
 #paginate: false
+
+sass:
+  silence_deprecations:
+    - import
+    - global-builtin
+    - color-functions
+    - slash-div
 
 # Exclude from processing.
 # The following items will not be processed, by default.
