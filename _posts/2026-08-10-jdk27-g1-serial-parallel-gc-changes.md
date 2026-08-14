@@ -5,11 +5,13 @@ date:   2026-08-10 11:00:00 +0200
 tags: [GC, G1, Parallel, Serial, JDK 27, Performance]
 ---
 
-OpenJDK 28 release is on the horizon I thought it would be time to discuss interesting changes in OpenJDK's stop-the-world collectors in the HotSpot VM once more.
+Since the OpenJDK 27 release is on the horizon I thought it would be time to discuss interesting changes in OpenJDK's stop-the-world collectors in the HotSpot VM once more.
 
 The complete list of resolved/closed changes for the GC subcomponent for JDK 27 is [here](https://bugs.openjdk.org/issues/?jql=project%20%3D%20JDK%20AND%20status%20%3D%20Resolved%20AND%20fixVersion%20%3D%20%2227%22%20AND%20component%20%3D%20hotspot%20AND%20Subcomponent%20%3D%20gc%20ORDER%20BY%20summary%20ASC%2C%20status%20DESC), containing around 350 changes in total.
 
-This raw count aligns with last release; similar to then, these numbers may be a bit inflated because of a fairly unusual number of refactorings and cleanups in the GC code. One particular area has been replacing our idiom to indicate cross-thread shared variables, from using `volatile` and appropriate `AtomicAccess` methods on them to using `Atomic<T>` introduced in [JDK-8367013](https://bugs.openjdk.org/browse/JDK-8367013) to make their use more explicit. Other notable refactorings include G1 state machine cleanups (including some [very very old](https://bugs.openjdk.org/browse/JDK-8080226) ones) and other code improvements. These make up around half of the changes.
+This raw count aligns with last release; similar to then, these numbers may be a bit inflated because of a fairly unusual number of refactorings and cleanups in the GC code.
+
+One particular area in the STW collector area has been replacing our idiom to indicate cross-thread shared variables, from using `volatile` and appropriate `AtomicAccess` methods on them to using `Atomic<T>` introduced in [JDK-8367013](https://bugs.openjdk.org/browse/JDK-8367013) to make their use more explicit. Other notable refactorings include G1 state machine cleanups (including some [very very old](https://bugs.openjdk.org/browse/JDK-8080226) ones) and other code improvements. These make up around half of the changes.
 
 Roughly another 35% of changes deal with bug fixes and general correctness and robustness improvements. The remainder is about new or materially revised behavior and features for HotSpot's STW collectors - and this is the part this post will dig down further now :)
 
@@ -17,7 +19,7 @@ Mixed in with these changes was infrastructure work for [JEP 401: Value Objects 
 
 ## G1 GC
 
-The most impactful change in this release has probably been [JEP 523: Make G1 the Default Garbage Collector in All Environments](https://openjdk.org/jeps/523). G1 is now the default collector if one does not specify any garbage collection algorithm explicitly on the command line. No exceptions, no Serial GC in any case by default (that is, unless G1 is not included in your distribution of OpenJDK). We thought that G1 fit the bill of a default collector nicely, and selecting something else depending on arcane environmental conditions was more of a burden than an advantage. Throughput, footprint and latency profile were step-by-step closing in on Serial GC particularly in the past few releases, so we felt it was about time to flip the switch.
+The most impactful change in this release has probably been [JEP 523: Make G1 the Default Garbage Collector in All Environments](https://openjdk.org/jeps/523). G1 is now the default collector if one does not specify any garbage collection algorithm explicitly on the command line. No exceptions, no Serial GC in any case by default (that is, unless G1 is not included in your distribution of OpenJDK :)). We thought that G1 fit the bill of a default collector nicely, and selecting something else depending on arcane environmental conditions was more of a burden than an advantage. Throughput, footprint and latency profile were step-by-step closing in on Serial GC in the applications it was still better, particularly in the past few releases, so we felt it was about time to flip the switch.
 
 One may still select Serial GC with the `-XX:+UseSerialGC` option if you observe notable differences to get pure, unchanged Serial GC. There obviously are some cases where for your application profile Serial GC is the better choice - G1 is not the best everywhere, but we think it is certainly the best to start off with.
 
